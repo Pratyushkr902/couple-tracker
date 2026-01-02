@@ -1,7 +1,7 @@
-/* --- Google Fonts --- */
+
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap');
 
-/* --- Root Variables --- */
+
 :root {
   --primary-pink: #ff758c;
   --secondary-pink: #ff7eb3;
@@ -11,7 +11,7 @@
   --glass-bg: rgba(255, 255, 255, 0.2);
 }
 
-/* --- Global Styles & Animated Background --- */
+
 body {
   margin: 0;
   padding: 0;
@@ -30,7 +30,7 @@ body {
   100% { background-position: 0% 50%; }
 }
 
-/* --- Layout Container --- */
+
 .container {
   max-width: 480px;
   margin: 0 auto;
@@ -38,7 +38,7 @@ body {
   box-sizing: border-box;
 }
 
-/* --- Top Bar & Stats --- */
+
 .user-bar {
   display: flex;
   justify-content: space-between;
@@ -77,7 +77,7 @@ body {
   50% { transform: translateY(-5px); }
 }
 
-/* --- Typography --- */
+
 h1 {
   font-family: 'Dancing Script', cursive;
   font-size: 3.5rem;
@@ -92,7 +92,7 @@ h3 {
   color: var(--primary-pink);
 }
 
-/* --- Glassmorphism Cards --- */
+
 .card {
   background: var(--soft-white);
   backdrop-filter: blur(20px);
@@ -104,7 +104,7 @@ h3 {
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* --- Mood Section --- */
+
 .mood-card {
   padding: 20px !important;
 }
@@ -165,7 +165,7 @@ h3 {
   font-size: 1.4rem;
 }
 
-/* --- Inputs & Buttons --- */
+
 textarea, input {
   width: 100%;
   border: 2px solid #f0f0f0;
@@ -204,7 +204,7 @@ button:hover {
   box-shadow: 0 10px 20px rgba(255, 117, 140, 0.4);
 }
 
-/* --- Time Capsule Extraordinary Effects --- */
+
 .capsule-card {
   border: 2px solid #a29bfe !important;
 }
@@ -246,7 +246,7 @@ button:hover {
   100% { transform: scale(1); }
 }
 
-/* --- Playlist --- */
+
 .song-item {
   background: white;
   padding: 10px 15px;

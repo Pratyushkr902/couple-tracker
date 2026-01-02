@@ -12,18 +12,17 @@ function App() {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
 
-  // --- ALL APP STATES (Initialized correctly to avoid warnings) ---
+  // States
   const [pro, setPro] = useState("");
   const [con, setCon] = useState("");
   const [answer, setAnswer] = useState("");
   const [history, setHistory] = useState([]);
   const [songLink, setSongLink] = useState("");
   const [playlist, setPlaylist] = useState([]);
-  const [bucketList, setBucketList] = useState([]);
   const [myMood, setMyMood] = useState("🤍");
   const [partnerMood, setPartnerMood] = useState("🤍");
-  const [note, setNote] = useState(""); // Input for sending a note
-  const [displayNote, setDisplayNote] = useState(""); // Receiving a note
+  const [note, setNote] = useState(""); 
+  const [displayNote, setDisplayNote] = useState(""); 
   const [capsuleMessage, setCapsuleMessage] = useState("");
   const [unlockDate, setUnlockDate] = useState("");
   const [capsules, setCapsules] = useState([]);
@@ -52,7 +51,6 @@ function App() {
             onValue(ref(db, `couples/${code}/logs`), (s) => setHistory(s.val() ? Object.values(s.val()).reverse() : []));
             onValue(ref(db, `couples/${code}/playlist`), (s) => setPlaylist(s.val() ? Object.values(s.val()).reverse() : []));
             onValue(ref(db, `couples/${code}/capsules`), (s) => setCapsules(s.val() ? Object.values(s.val()) : []));
-            
             onValue(ref(db, `couples/${code}/moods`), (s) => {
               const moods = s.val();
               if (moods) {
@@ -61,7 +59,6 @@ function App() {
                 setMyMood(moods[currentUser.uid] || "🤍");
               }
             });
-
             onValue(ref(db, `couples/${code}/notes`), (s) => {
               const notes = s.val();
               if (notes) {
@@ -77,6 +74,7 @@ function App() {
   }, []);
 
   const handleAuth = async () => {
+    if (!email || !password) return alert("Please fill in all fields");
     try {
       if (isLogin) await signInWithEmailAndPassword(auth, email, password);
       else await createUserWithEmailAndPassword(auth, email, password);
@@ -116,12 +114,26 @@ function App() {
   if (!user) {
     return (
       <div className="container">
-        <h1>{isLogin ? "Welcome Back 💖" : "Start Your Journey"}</h1>
+        <h1>{isLogin ? "Welcome Back 💖" : "Create Account ✨"}</h1>
         <div className="card shadow-glass">
-          <input type="email" value={email || ""} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-          <input type="password" value={password || ""} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-          <button onClick={handleAuth}>{isLogin ? "Login" : "Sign Up"}</button>
-          <p onClick={() => setIsLogin(!isLogin)} style={{cursor: 'pointer', color: 'white', marginTop: '10px'}}>{isLogin ? "Need an account? Sign up" : "Already have an account? Login"}</p>
+          <input type="email" value={email || ""} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" />
+          <input type="password" value={password || ""} onChange={(e) => setPassword(e.target.value)} placeholder="Password" style={{marginTop:'10px'}} />
+          
+          <button onClick={handleAuth} style={{marginTop: '20px', background: isLogin ? '' : '#2ecc71'}}>
+            {isLogin ? "Login" : "Sign Up Now"}
+          </button>
+          
+          <div style={{marginTop: '15px', borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '15px'}}>
+            <p style={{color: 'white', fontSize: '0.9rem'}}>
+              {isLogin ? "New to Bondify?" : "Already have an account?"}
+            </p>
+            <button 
+              onClick={() => setIsLogin(!isLogin)} 
+              style={{background: 'rgba(255,255,255,0.2)', marginTop: '5px', padding: '8px', fontSize: '0.8rem'}}
+            >
+              {isLogin ? "Create New Account" : "Back to Login"}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -151,7 +163,6 @@ function App() {
       
       <h1>Together Forever ♾️</h1>
 
-      {/* MOOD SECTION */}
       <div className="card mood-card">
         <div className="mood-display">
           <div className="mood-box">
@@ -167,7 +178,6 @@ function App() {
         </div>
       </div>
 
-      {/* SEND & RECEIVE NOTES */}
       <div className="card">
         <h3>Send a Love Note 💌</h3>
         <input value={note || ""} onChange={(e) => setNote(e.target.value)} placeholder="Type something sweet..." />
@@ -182,7 +192,6 @@ function App() {
         </div>
       )}
 
-      {/* DAILY MEMORY */}
       <div className="card">
         <p className="actual-q">"{currentQuestion}"</p>
         <textarea value={answer || ""} onChange={(e) => setAnswer(e.target.value)} placeholder="Your answer..." />
@@ -193,7 +202,6 @@ function App() {
         <button onClick={handleAddLog}>Save Today's Memory</button>
       </div>
 
-      {/* TIME CAPSULE */}
       <div className="card capsule-card">
         <h3>Time Capsule ⏳</h3>
         <textarea value={capsuleMessage || ""} onChange={(e) => setCapsuleMessage(e.target.value)} placeholder="A message for the future..." />
@@ -213,7 +221,6 @@ function App() {
         </div>
       </div>
 
-      {/* PLAYLIST */}
       <div className="card">
         <h3>Our Vibes 🎵</h3>
         <div className="flex-row">
