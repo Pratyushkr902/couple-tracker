@@ -128,53 +128,34 @@ function App() {
   if (!user) {
     return (
       <div className="container">
-        <h1>{isLogin ? "Welcome Back 💖" : "Create Account ✨"}</h1>
+        <div className="logo-container">
+          <div className="heart-link">
+            <div className="heart heart-1"></div>
+            <div className="heart heart-2"></div>
+          </div>
+          <h1 className="logo-text">Bondify</h1>
+        </div>
         <div className="card shadow-glass login-card">
-          <input 
-            type="email" 
-            value={email || ""} 
-            onChange={(e) => setEmail(e.target.value)} 
-            placeholder="Email Address" 
-          />
-          <input 
-            type="password" 
-            value={password || ""} 
-            onChange={(e) => setPassword(e.target.value)} 
-            placeholder="Password" 
-            style={{marginTop: '10px'}}
-          />
+          <input type="email" value={email || ""} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" />
+          <input type="password" value={password || ""} onChange={(e) => setPassword(e.target.value)} placeholder="Password" style={{marginTop:'10px'}} />
           
           <div style={{marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
-            <button onClick={handleAuth} style={{background: isLogin ? '#e91e63' : '#2ecc71', fontWeight: 'bold'}}>
-              {isLogin ? "Login" : "Register Now"}
+            <button 
+              onClick={handleAuth} 
+              style={{background: isLogin ? '#e91e63' : '#2ecc71', fontWeight: 'bold'}}
+            >
+              {isLogin ? "Login" : "Create Our Account ✨"}
             </button>
 
             {isLogin && (
-              <div 
-                onClick={handleResetPassword} 
-                style={{
-                  color: '#ff7eb3', 
-                  fontSize: '0.85rem', 
-                  cursor: 'pointer', 
-                  textAlign: 'center', 
-                  padding: '5px',
-                  textShadow: '0 0 8px rgba(255, 126, 179, 0.4)',
-                  transition: '0.3s'
-                }}
-              >
+              <div onClick={handleResetPassword} className="reset-link" style={{color: '#ff7eb3', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'center', textShadow: '0 0 8px rgba(255, 126, 179, 0.4)'}}>
                 Forgot Password? 🤍
               </div>
             )}
 
             <button 
               onClick={() => setIsLogin(!isLogin)} 
-              style={{
-                background: 'rgba(255,255,255,0.1)', 
-                border: '1px solid rgba(255,255,255,0.3)', 
-                fontSize: '0.8rem', 
-                marginTop: '10px',
-                borderRadius: '25px'
-              }}
+              style={{background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', fontSize: '0.8rem', marginTop: '10px', borderRadius: '25px'}}
             >
               {isLogin ? "New user? Create Account" : "Back to Login"}
             </button>
@@ -206,7 +187,13 @@ function App() {
 
       <div className="stats-badge">Day {diffInDays} of Us ✨</div>
       
-      <h1>Together Forever ♾️</h1>
+      <div className="logo-container">
+        <div className="heart-link">
+          <div className="heart heart-1"></div>
+          <div className="heart heart-2"></div>
+        </div>
+        <h1 className="logo-text">Bondify</h1>
+      </div>
 
       <div className="card mood-card">
         <div className="mood-display">
@@ -269,11 +256,21 @@ function App() {
       <div className="card">
         <h3>Our Vibes 🎵</h3>
         <div className="flex-row">
-          <input value={songLink || ""} onChange={(e) => setSongLink(e.target.value)} placeholder="Song link..." />
-          <button onClick={() => { push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink, user: user.email.split('@')[0], timestamp: Date.now() }); setSongLink(""); }}>+</button>
+          <input value={songLink || ""} onChange={(e) => setSongLink(e.target.value)} placeholder="Spotify link..." />
+          <button onClick={() => { 
+            if(!songLink) return;
+            push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink, user: user.email.split('@')[0], timestamp: Date.now() }); 
+            setSongLink(""); 
+          }}>+</button>
         </div>
-        <div className="playlist-list">
-          {playlist.slice(0, 3).map((s, i) => <div key={i} className="song-item"><a href={s.link} target="_blank" rel="noreferrer">▶ {s.user}'s Pick</a></div>)}
+        <div className="playlist-list" style={{marginTop:'15px'}}>
+          {playlist.map((s, i) => (
+            <div key={i} className="song-item" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+              <a href={s.link} target="_blank" rel="noreferrer" style={{textDecoration:'none', color:'var(--primary-pink)', fontWeight:'600'}}>
+                ▶ {s.user}'s Pick #{playlist.length - i}
+              </a>
+            </div>
+          ))}
         </div>
       </div>
 
