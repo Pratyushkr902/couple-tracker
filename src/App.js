@@ -4,11 +4,12 @@ import {
   ref, push, set, onValue, remove, update, limitToLast, query, serverTimestamp 
 } from "firebase/database";
 import { 
-  onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword 
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut 
 } from "firebase/auth";
 import './App.css';
 
 function App() {
+  // --- 1. CORE STATES ---
   const [user, setUser] = useState(null);
   const [coupleCode, setCoupleCode] = useState("");
   const [tempCode, setTempCode] = useState("");
@@ -16,264 +17,275 @@ function App() {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
 
-  // States for Features
-  const [messages, setMessages] = useState([]);
-  const [chatMsg, setChatMsg] = useState("");
-  const [chatImage, setChatImage] = useState(null);
-  const [myMood, setMyMood] = useState("😊");
-  const [partnerMood, setPartnerMood] = useState("😊");
-  const [shayaris, setShayaris] = useState([]);
-  const [shayariText, setShayariText] = useState("");
-  const [isCursiveShayari, setIsCursiveShayari] = useState(false);
-  const [playlist, setPlaylist] = useState([]);
-  const [songLink, setSongLink] = useState("");
-  const [bucketList, setBucketList] = useState([]);
-  const [goalText, setGoalText] = useState("");
-  const [goalImg, setGoalImg] = useState("");
-  const [game, setGame] = useState({ type: '', task: '', sender: '' });
-  const [nudgeShake, setNudgeShake] = useState(false);
+  // --- 2. DATA LISTS (SAB KUCH RESTORED) ---
   const [history, setHistory] = useState([]);
+  const [playlist, setPlaylist] = useState([]);
+  const [milestones, setMilestones] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [shayaris, setShayaris] = useState([]); 
+  const [game, setGame] = useState({ type: '', task: '', sender: '' });
+  
+  // --- 3. INPUT STATES ---
   const [answer, setAnswer] = useState("");
+  const [pro, setPro] = useState("");
+  const [con, setCon] = useState("");
+  const [songLink, setSongLink] = useState("");
+  const [shayariText, setShayariText] = useState("");
+  const [note, setNote] = useState(""); 
+  const [displayNote, setDisplayNote] = useState(""); 
+  const [milestone, setMilestone] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [chatMsg, setChatMsg] = useState("");
+  const [chatImage, setChatImage] = useState(""); 
+  const [dreamDate, setDreamDate] = useState(""); 
+  const [partnerDate, setPartnerDate] = useState("");
 
-  // Dates
+  // --- 4. UI & LOGIC STATES ---
+  const [myMood, setMyMood] = useState("🤍");
+  const [partnerMood, setPartnerMood] = useState("🤍");
+  const [nudgeShake, setNudgeShake] = useState(false); 
   const [anniversaryDate, setAnniversaryDate] = useState("2024-01-01");
-  const [birthdayDate, setBirthdayDate] = useState("2024-01-01");
+  const [birthdayDate, setBirthdayDate] = useState("2024-06-15");
 
   const chatEndRef = useRef(null);
-  const cameraRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
-  // --- Logic: Countdown ---
-  const getDaysLeft = (targetDate) => {
+  // --- 5. AUTOMATIC LOGIC (COUNTDOWN & QUESTIONS) ---
+  const getCountdown = (targetDate) => {
     const today = new Date();
-    const target = new Date(targetDate);
+    const target = new Date(today.getFullYear(), new Date(targetDate).getMonth(), new Date(targetDate).getDate());
+    if (today > target) target.setFullYear(today.getFullYear() + 1);
     const diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-    return diff > 0 ? `${diff} Days Left` : "Today! 🎉";
+    return (diff === 365 || diff === 0) ? "Today! 🎉" : `${diff} Days`;
   };
 
-  const getTogetherDays = () => {
+  const getDaysOfUs = () => {
     const start = new Date(anniversaryDate);
-    const today = new Date();
-    return Math.floor((today - start) / (1000 * 60 * 60 * 24));
+    const diff = Math.floor((new Date() - start) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
   };
 
-  // --- Daily Question Logic ---
-  const questions = [
-    "What is your favourite quality about me?",
-    "Where do you want to go on our next date?",
-    "What was your first thought when you saw me?",
-    "Which song reminds you of us?",
-    "What is one thing you love about our journey?"
+  const dailyQuestions = [
+    "What is your favourite quality about me?", 
+    "What was your first impression of me?", 
+    "Where should our next dream date be?", 
+    "What is one memory of us you'll keep forever?",
+    "If we had a whole day with no phones, what would we do?"
   ];
-  const currentQuestion = questions[Math.floor(new Date().getDate() % questions.length)];
+  const dayIndex = Math.floor(new Date().getTime() / (1000 * 60 * 60 * 24));
+  const currentQuestion = dailyQuestions[dayIndex % dailyQuestions.length];
 
+  // --- 6. FIREBASE REAL-TIME SYNC ---
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        onValue(ref(db, `users/${currentUser.uid}/coupleCode`), (snap) => {
-          const code = snap.val();
+        onValue(ref(db, `users/${currentUser.uid}/coupleCode`), (snapshot) => {
+          const code = snapshot.val();
           setCoupleCode(code);
           if (code) {
-            // Sync Moods
+            // Settings Sync
+            onValue(ref(db, `couples/${code}/settings`), (s) => {
+              if (s.val()) {
+                setAnniversaryDate(s.val().anniversary || "2024-01-01");
+                setBirthdayDate(s.val().birthday || "2024-06-15");
+              }
+            });
+            // Mood Sync
             onValue(ref(db, `couples/${code}/moods`), (s) => {
               if (s.val()) {
                 const pId = Object.keys(s.val()).find(id => id !== currentUser.uid);
                 if (pId) setPartnerMood(s.val()[pId]);
-                setMyMood(s.val()[currentUser.uid] || "😊");
+                setMyMood(s.val()[currentUser.uid] || "🤍");
               }
             });
-            // Sync Chats
-            onValue(query(ref(db, `couples/${code}/chats`), limitToLast(20)), (s) => {
+            // Chat Sync
+            onValue(query(ref(db, `couples/${code}/chats`), limitToLast(30)), (s) => {
               setMessages(s.val() ? Object.values(s.val()) : []);
-              chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+              setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
             });
-            // Sync Nudge
+            // Love Notes Sync
+            onValue(ref(db, `couples/${code}/notes`), (s) => {
+              if (s.val()) {
+                const pId = Object.keys(s.val()).find(id => id !== currentUser.uid);
+                if (pId) setDisplayNote(s.val()[pId]);
+              } else { setDisplayNote(""); }
+            });
+            // Nudge Sync
             onValue(ref(db, `couples/${code}/nudge/${currentUser.uid}`), (s) => {
               if (s.val()) {
                 setNudgeShake(true);
-                setTimeout(() => { 
-                  setNudgeShake(false); 
-                  remove(ref(db, `couples/${code}/nudge/${currentUser.uid}`)); 
-                }, 1000);
+                setTimeout(() => { setNudgeShake(false); remove(ref(db, `couples/${code}/nudge/${currentUser.uid}`)); }, 1000);
               }
             });
-            // Sync Shayaris & Playlist
-            onValue(ref(db, `couples/${code}/shayaris`), (s) => setShayaris(s.val() ? Object.values(s.val()).reverse() : []));
-            onValue(ref(db, `couples/${code}/playlist`), (s) => setPlaylist(s.val() ? Object.values(s.val()).reverse() : []));
-            onValue(ref(db, `couples/${code}/bucketList`), (s) => setBucketList(s.val() ? Object.values(s.val()) : []));
-            onValue(ref(db, `couples/${code}/game`), (s) => setGame(s.val() || {}));
-            onValue(ref(db, `couples/${code}/history`), (s) => setHistory(s.val() ? Object.values(s.val()).reverse() : []));
+            // Other Lists Sync
+            onValue(ref(db, `couples/${code}/logs`), (s) => setHistory(s.val() ? Object.values(s.val()).reverse() : []));
+            onValue(ref(db, `couples/${code}/playlist`), (s) => setPlaylist(s.val() ? Object.keys(s.val()).map(k => ({ id: k, ...s.val()[k] })).reverse() : []));
+            onValue(ref(db, `couples/${code}/milestones`), (s) => setMilestones(s.val() ? Object.keys(s.val()).map(k => ({ id: k, ...s.val()[k] })).reverse() : []));
+            onValue(ref(db, `couples/${code}/shayaris`), (s) => setShayaris(s.val() ? Object.keys(s.val()).map(k => ({ id: k, ...s.val()[k] })).reverse() : []));
+            onValue(ref(db, `couples/${code}/game`), (s) => setGame(s.val() || { type: '', task: '', sender: '' }));
           }
         });
       }
     });
-    return () => unsub();
+    return () => unsubscribe();
   }, []);
 
-  const sendMsg = (e) => {
-    e.preventDefault();
-    if (!chatMsg && !chatImage) return;
-    push(ref(db, `couples/${coupleCode}/chats`), {
-      text: chatMsg, image: chatImage, sender: user.uid, ts: serverTimestamp()
-    });
-    setChatMsg(""); setChatImage(null);
-  };
-
-  const handleNudge = () => {
+  // --- 7. ACTION HANDLERS ---
+  const triggerNudge = () => {
     onValue(ref(db, `couples/${coupleCode}/moods`), (s) => {
       const pId = Object.keys(s.val()).find(id => id !== user.uid);
       if (pId) set(ref(db, `couples/${coupleCode}/nudge/${pId}`), true);
     }, { onlyOnce: true });
   };
 
-  if (!user) return (
-    <div className="auth-container">
-      <div className="glass-card">
-        <h2>{isLogin ? "Welcome Back" : "Create Bond"}</h2>
-        <input type="email" placeholder="Email" onChange={e => setEmail(e.target.value)} />
-        <input type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} />
-        <button onClick={() => isLogin ? signInWithEmailAndPassword(auth, email, password) : createUserWithEmailAndPassword(auth, email, password)}>
-          {isLogin ? "Login" : "Register"}
-        </button>
-        <p onClick={() => setIsLogin(!isLogin)}>{isLogin ? "Need an account? Register" : "Have account? Login"}</p>
-      </div>
-    </div>
-  );
+  const handleCamera = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setChatImage(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
 
-  if (!coupleCode) return (
-    <div className="auth-container">
-      <div className="glass-card">
-        <h3>Enter Couple Code</h3>
-        <input placeholder="e.g. shubham-sneha" onChange={e => setTempCode(e.target.value)} />
-        <button onClick={() => set(ref(db, `users/${user.uid}/coupleCode`), tempCode.toLowerCase())}>Link Hearts</button>
+  const sendChatMessage = async (e) => {
+    e.preventDefault();
+    if (!chatMsg && !chatImage) return;
+    await push(ref(db, `couples/${coupleCode}/chats`), {
+      text: chatMsg, image: chatImage, sender: user.uid, timestamp: serverTimestamp()
+    });
+    setChatMsg(""); setChatImage("");
+  };
+
+  if (!user) {
+    return (
+      <div className="container auth-bg">
+        <h1 className="logo-text">Bondify</h1>
+        <div className="card shadow-glass login-card">
+          <input className="modern-input" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+          <input className="modern-input" type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+          <button className="primary-btn" onClick={() => (isLogin ? signInWithEmailAndPassword(auth, email, password) : createUserWithEmailAndPassword(auth, email, password))}>{isLogin ? "Login" : "Join Us"}</button>
+          <p className="toggle-auth" onClick={() => setIsLogin(!isLogin)}>{isLogin ? "Create Account" : "Back to Login"}</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
-    <div className={`app-wrapper ${nudgeShake ? 'shake-ui' : ''}`}>
-      <header className="main-header">
-        <div className="days-counter">❤️ {getTogetherDays()} Days Together</div>
-        <button className="logout-btn" onClick={() => signOut(auth)}>Logout</button>
-      </header>
+    <div className={`container ${nudgeShake ? 'nudge-shake' : ''}`}>
+      <div className="user-bar"><span>🔒 {coupleCode}</span><button onClick={() => signOut(auth)}>Logout</button></div>
 
-      {/* Countdown Section */}
-      <section className="countdown-section">
-        <div className="timer-box">
-          <small>Anniversary</small>
-          <p>{getDaysLeft(anniversaryDate)}</p>
+      {/* Date Settings */}
+      <div className="card settings-card">
+        <h4 className="cursive-text">Set Your Special Dates 📅</h4>
+        <div className="flex-row">
+          <div><small>Anniversary</small><input type="date" value={anniversaryDate} onChange={(e) => {setAnniversaryDate(e.target.value); update(ref(db, `couples/${coupleCode}/settings`), {anniversary: e.target.value})}} /></div>
+          <div><small>Partner B-Day</small><input type="date" value={birthdayDate} onChange={(e) => {setBirthdayDate(e.target.value); update(ref(db, `couples/${coupleCode}/settings`), {birthday: e.target.value})}} /></div>
         </div>
-        <div className="timer-box">
-          <small>Your B'Day</small>
-          <p>{getDaysLeft(birthdayDate)}</p>
-        </div>
-      </section>
+      </div>
 
-      {/* Mood & Nudge */}
-      <section className="mood-nudge-card">
-        <div className="mood-selector">
-          <span>My Mood:</span>
-          {["😊", "🥰", "🥺", "😤", "🔥"].map(emoji => (
-            <button key={emoji} onClick={() => set(ref(db, `couples/${coupleCode}/moods/${user.uid}`), emoji)}
-              className={myMood === emoji ? 'active' : ''}>{emoji}</button>
-          ))}
-        </div>
-        <div className="partner-mood-display" onClick={handleNudge}>
-          <div className="mood-circle">{partnerMood}</div>
-          <small>Tap to Nudge Partner ⚡</small>
-        </div>
-      </section>
+      <div className="countdown-grid">
+        <div className="date-pill"><h4>Days Together</h4><p>{getDaysOfUs()} ✨</p></div>
+        <div className="date-pill"><h4>Anniversary</h4><p>{getCountdown(anniversaryDate)}</p></div>
+        <div className="date-pill"><h4>Birthday</h4><p>{getCountdown(birthdayDate)}</p></div>
+      </div>
 
-      {/* Chatbot Window */}
-      <section className="chat-container">
-        <div className="chat-window">
+      {/* Love Note Popup */}
+      {displayNote && (
+        <div className="sticky-note-card animate-pop cursive-text">
+          <p>"{displayNote}"</p>
+          <button className="clear-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/notes`))}>Read & Clear 📌</button>
+        </div>
+      )}
+
+      {/* Chat & Mood Section */}
+      <div className="card mood-chat-grid large-chat-container">
+        <div className="mood-header">
+           <div className="mood-item">
+             <div className="emoji-picker large-emoji-mood">
+              {["❤️", "💖", "😴", "😊", "🔥", "😭", "😤", "🥰", "🥳", "🥺"].map(e => (
+                <button key={e} onClick={() => set(ref(db, `couples/${coupleCode}/moods/${user.uid}`), e)} className={myMood === e ? "active-mood" : ""}>{e}</button>
+              ))}
+            </div>
+           </div>
+           <div className="mood-divider"></div>
+           <div className="mood-item">
+             <div className="partner-emoji-display large-emoji-display" onClick={triggerNudge}>{partnerMood}</div>
+             <button className="nudge-btn" onClick={triggerNudge}>Nudge ⚡</button>
+           </div>
+        </div>
+
+        <div className="chat-window large-window">
           {messages.map((m, i) => (
-            <div key={i} className={`chat-bubble ${m.sender === user.uid ? 'me' : 'partner'}`}>
-              {m.image && <img src={m.image} alt="upload" />}
-              {m.text && <p>{m.text}</p>}
+            <div key={i} className={`msg-bubble ${m.sender === user.uid ? "msg-me original-font" : "msg-partner partner-style"}`}>
+              {m.image && <img src={m.image} alt="chat" className="chat-img-preview" />}
+              {m.text && <span>{m.text}</span>}
             </div>
           ))}
           <div ref={chatEndRef} />
         </div>
-        <form className="chat-controls" onSubmit={sendMsg}>
-          <button type="button" onClick={() => cameraRef.current.click()}>📸</button>
-          <input type="file" ref={cameraRef} hidden onChange={e => {
-            const reader = new FileReader();
-            reader.onload = () => setChatImage(reader.result);
-            reader.readAsDataURL(e.target.files[0]);
-          }} />
-          <input value={chatMsg} onChange={e => setChatMsg(e.target.value)} placeholder="Type message..." />
-          <button type="submit">Send</button>
+        
+        <form className="chat-input-bar" onSubmit={sendChatMessage}>
+           <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} style={{display:'none'}} onChange={handleCamera} />
+           <textarea className="chat-textarea original-font" value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} placeholder="Type a message..." />
+           <div className="chat-actions-row">
+             <button type="button" className="camera-trigger" onClick={() => cameraInputRef.current.click()}>📸</button>
+             <button type="submit" className="send-btn">🕊️</button>
+           </div>
         </form>
-      </section>
+      </div>
 
-      {/* Games & Fun */}
-      <div className="extra-grid">
-        <section className="love-note-card">
-          <h3 className="cursive">Love Note</h3>
-          <p className="cursive">"You make my heart skip a beat every single day."</p>
-        </section>
-
-        <section className="game-card">
-          <h3>Truth or Dare 🎲</h3>
-          <div className="btn-row">
-            <button onClick={() => set(ref(db, `couples/${coupleCode}/game`), { type: 'Truth', task: 'First crush name?', sender: user.uid })}>Truth</button>
-            <button onClick={() => set(ref(db, `couples/${coupleCode}/game`), { type: 'Dare', task: 'Send a funny selfie!', sender: user.uid })}>Dare</button>
-          </div>
-          {game.task && <div className="game-task"><b>{game.type}:</b> {game.task}</div>}
-        </section>
+      {/* Love Note Writer */}
+      <div className="card">
+        <h3 className="cursive-text">Write a Love Note 💌</h3>
+        <input className="modern-input cursive-text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Say something sweet..." />
+        <button className="primary-btn" onClick={() => { if(!note) return; set(ref(db, `couples/${coupleCode}/notes/${user.uid}`), note); setNote(""); }}>Post Note</button>
       </div>
 
       {/* Vibes & Shayaries */}
-      <section className="vibes-section">
-        <h3>Vibes & Shayaries 🎵</h3>
-        <input placeholder="Spotify/YT Link" value={songLink} onChange={e => setSongLink(e.target.value)} />
-        <button onClick={() => { push(ref(db, `couples/${coupleCode}/playlist`), { title: "New Song", link: songLink }); setSongLink(""); }}>Add Vibe</button>
-        
-        <div className="shayari-box">
-          <textarea className={isCursiveShayari ? 'cursive' : ''} placeholder="Write Shayari..." value={shayariText} onChange={e => setShayariText(e.target.value)} />
-          <div className="btn-row">
-            <button onClick={() => setIsCursiveShayari(!isCursiveShayari)}>Change Font</button>
-            <button onClick={() => { push(ref(db, `couples/${coupleCode}/shayaris`), { text: shayariText, cursive: isCursiveShayari }); setShayariText(""); }}>Post</button>
-          </div>
+      <div className="card vibe-card">
+        <h3>Vibes & Shayaries 🎵✍️</h3>
+        <div className="input-group"><input className="modern-input" value={songLink} onChange={(e) => setSongLink(e.target.value)} placeholder="Spotify Link" /><button className="plus-btn" onClick={() => { if(!songLink) return; push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink, user: user.email }); setSongLink(""); }}>+</button></div>
+        <div className="input-group"><textarea className="modern-textarea cursive-text" value={shayariText} onChange={(e) => setShayariText(e.target.value)} placeholder="Write Shayari" /><button className="plus-btn" onClick={() => { if(!shayariText) return; push(ref(db, `couples/${coupleCode}/shayaris`), { text: shayariText, user: user.email }); setShayariText(""); }}>+</button></div>
+        <div className="vibe-scroller">
+          {playlist.map(s => <div key={s.id} className="vibe-item"><span>🎵 {s.user.split('@')[0]}'s Pick</span><button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/playlist/${s.id}`))}>×</button></div>)}
+          {shayaris.map(sh => <div key={sh.id} className="shayari-item cursive-text">"{sh.text}"<button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/shayaris/${sh.id}`))}>×</button></div>)}
         </div>
-      </section>
+      </div>
 
       {/* Bucket List */}
-      <section className="bucket-list">
-        <h3>Our Bucket List 🎒</h3>
-        <input placeholder="Next Goal..." onChange={e => setGoalText(e.target.value)} />
-        <input placeholder="Image URL..." onChange={e => setGoalImg(e.target.value)} />
-        <button onClick={() => push(ref(db, `couples/${coupleCode}/bucketList`), { text: goalText, img: goalImg })}>Add Goal</button>
-        <div className="gallery">
-          {bucketList.map((item, i) => (
-            <div key={i} className="gallery-item">
-              <img src={item.img} alt="goal" />
-              <p>{item.text}</p>
+      <div className="card">
+        <h3>Our Bucket List 📸</h3>
+        <input className="modern-input" value={milestone} onChange={(e) => setMilestone(e.target.value)} placeholder="Next goal..." />
+        <input className="modern-input" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="Photo Link..." />
+        <button className="primary-btn" onClick={() => { push(ref(db, `couples/${coupleCode}/milestones`), { text: milestone, photo: photoUrl, completed: false }); setMilestone(""); setPhotoUrl(""); }}>Add</button>
+        <div className="milestone-gallery">
+          {milestones.map(m => (
+            <div key={m.id} className={`milestone-card ${m.completed ? 'completed' : ''}`} onClick={() => update(ref(db, `couples/${coupleCode}/milestones/${m.id}`), { completed: !m.completed })}>
+              {m.photo && <img src={m.photo} alt="goal" className="milestone-img" />}
+              <p>{m.text}</p>
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
-      {/* Journey & Daily Q */}
-      <section className="journey-section">
-        <div className="daily-q-box">
-          <h4>{currentQuestion}</h4>
-          <textarea placeholder="Your answer..." value={answer} onChange={e => setAnswer(e.target.value)} />
-          <button onClick={() => { push(ref(db, `couples/${coupleCode}/history`), { q: currentQuestion, a: answer, date: new Date().toDateString() }); setAnswer(""); }}>Save Memory</button>
-        </div>
-        <div className="timeline">
-          {history.map((h, i) => (
-            <div key={i} className="memory-card">
-              <small>{h.date}</small>
-              <p><b>Q:</b> {h.q}</p>
-              <p><b>A:</b> {h.a}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Journey History */}
+      <div className="card journey-input">
+        <p className="daily-q cursive-text">"{currentQuestion}"</p>
+        <textarea className="modern-textarea" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Write your memory..." />
+        <button className="primary-btn" onClick={() => { push(ref(db, `couples/${coupleCode}/logs`), { date: new Date().toLocaleDateString(), question: currentQuestion, answer }); setAnswer(""); }}>Save Memory</button>
+      </div>
+
+      <div className="journey-history">
+        {history.map((item, i) => (
+          <div key={i} className="sticky-note">
+            <span className="sticky-date">{item.date}</span>
+            <p className="sticky-q cursive-text">"{item.question}"</p>
+            <p className="sticky-a cursive-text">{item.answer}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
-
 export default App;
