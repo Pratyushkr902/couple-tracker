@@ -111,27 +111,38 @@ function App() {
     setCapsuleMessage(""); setUnlockDate("");
   };
 
+  // --- REWRITTEN AUTH SECTION ---
   if (!user) {
     return (
       <div className="container">
         <h1>{isLogin ? "Welcome Back 💖" : "Create Account ✨"}</h1>
-        <div className="card shadow-glass">
-          <input type="email" value={email || ""} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" />
-          <input type="password" value={password || ""} onChange={(e) => setPassword(e.target.value)} placeholder="Password" style={{marginTop:'10px'}} />
+        <div className="card shadow-glass login-card">
+          <input 
+            type="email" 
+            value={email || ""} 
+            onChange={(e) => setEmail(e.target.value)} 
+            placeholder="Email Address" 
+          />
+          <input 
+            type="password" 
+            value={password || ""} 
+            onChange={(e) => setPassword(e.target.value)} 
+            placeholder="Password" 
+            style={{marginTop: '10px'}}
+          />
           
-          <button onClick={handleAuth} style={{marginTop: '20px', background: isLogin ? '' : '#2ecc71'}}>
-            {isLogin ? "Login" : "Sign Up Now"}
-          </button>
-          
-          <div style={{marginTop: '15px', borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '15px'}}>
-            <p style={{color: 'white', fontSize: '0.9rem'}}>
-              {isLogin ? "New to Bondify?" : "Already have an account?"}
-            </p>
+          <div style={{marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px'}}>
+            {/* Primary Action Button */}
+            <button onClick={handleAuth} style={{background: isLogin ? '#e91e63' : '#2ecc71'}}>
+              {isLogin ? "Login" : "Register Now"}
+            </button>
+
+            {/* Clear Toggle Button */}
             <button 
               onClick={() => setIsLogin(!isLogin)} 
-              style={{background: 'rgba(255,255,255,0.2)', marginTop: '5px', padding: '8px', fontSize: '0.8rem'}}
+              style={{background: 'rgba(255,255,255,0.1)', border: '1px solid white', fontSize: '0.8rem'}}
             >
-              {isLogin ? "Create New Account" : "Back to Login"}
+              {isLogin ? "New user? Click here to Sign Up" : "Already have an account? Log In"}
             </button>
           </div>
         </div>
