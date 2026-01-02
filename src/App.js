@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from './firebase'; 
-import { ref, push, set, onValue, remove, update, limitToLast, query } from "firebase/database";
+import { ref, push, set, onValue, remove, update, limitToLast, query, serverTimestamp } from "firebase/database";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -29,13 +29,13 @@ function App() {
   const [partnerMood, setPartnerMood] = useState("🤍");
   const [note, setNote] = useState(""); 
   const [displayNote, setDisplayNote] = useState(""); 
-  const [capsuleMessage, setCapsuleMessage] = useState("");
-  const [unlockDate, setUnlockDate] = useState("");
-  const [capsules, setCapsules] = useState([]);
+  
+  // New States: Milestones & Typing
   const [milestone, setMilestone] = useState("");
   const [milestones, setMilestones] = useState([]);
+  const [isPartnerTyping, setIsPartnerTyping] = useState(false);
 
-  // NEW: Chat States
+  // Chat States
   const [chatMsg, setChatMsg] = useState("");
   const [messages, setMessages] = useState([]);
   const chatEndRef = useRef(null);
@@ -64,7 +64,6 @@ function App() {
               const data = s.val();
               setMilestones(data ? Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse() : []);
             });
-            onValue(ref(db, `couples/${code}/capsules`), (s) => setCapsules(s.val() ? Object.values(s.val()) : []));
             
             // Sync Moods
             onValue(ref(db, `couples/${code}/moods`), (s) => {
@@ -76,7 +75,16 @@ function App() {
               }
             });
 
-            // Sync Chat Messages (Limit to last 50 for speed)
+            // Sync Typing Status
+            onValue(ref(db, `couples/${code}/typing`), (s) => {
+              const typingData = s.val();
+              if (typingData) {
+                const pId = Object.keys(typingData).find(id => id !== currentUser.uid);
+                setIsPartnerTyping(typingData[pId] || false);
+              }
+            });
+
+            // Sync Chat
             const chatQuery = query(ref(db, `couples/${code}/chats`), limitToLast(50));
             onValue(chatQuery, (s) => {
               const data = s.val();
@@ -98,13 +106,33 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // Update Typing Status
+  const handleTyping = (val) => {
+    setChatMsg(val);
+    set(ref(db, `couples/${coupleCode}/typing/${user.uid}`), val.length > 0);
+    // Auto-clear typing after 3 seconds of no input
+    setTimeout(() => {
+        set(ref(db, `couples/${coupleCode}/typing/${user.uid}`), false);
+    }, 3000);
+  };
+
+  const sendNudge = () => {
+    push(ref(db, `couples/${coupleCode}/chats`), {
+      text: "👋 I'm thinking of you right now!",
+      sender: user.uid,
+      timestamp: serverTimestamp()
+    });
+    alert("Nudge sent! 💓");
+  };
+
   const sendChatMessage = async (e) => {
     e.preventDefault();
     if (!chatMsg.trim()) return;
+    set(ref(db, `couples/${coupleCode}/typing/${user.uid}`), false);
     await push(ref(db, `couples/${coupleCode}/chats`), {
       text: chatMsg,
       sender: user.uid,
-      timestamp: Date.now()
+      timestamp: serverTimestamp()
     });
     setChatMsg("");
   };
@@ -117,25 +145,14 @@ function App() {
     } catch (err) { alert(err.message); }
   };
 
-  const handleResetPassword = async () => {
-    if (!email) return alert("Please enter your email address first!");
-    try { await sendPasswordResetEmail(auth, email); alert("Password reset email sent! 📧"); } catch (err) { alert(err.message); }
-  };
-
-  const addMilestone = async () => {
-    if (!milestone) return;
-    await push(ref(db, `couples/${coupleCode}/milestones`), { text: milestone, completed: false, timestamp: Date.now() });
-    setMilestone("");
-  };
-
   if (!user) {
     return (
       <div className="container">
         <div className="logo-container"><div className="heart-link"><div className="heart heart-1"></div><div className="heart heart-2"></div></div><h1 className="logo-text">Bondify</h1></div>
         <div className="card shadow-glass login-card">
           <h2 style={{color: 'white', marginBottom: '20px'}}>{isLogin ? "Welcome Back" : "Join the Love"}</h2>
-          <input type="email" value={email || ""} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" />
-          <input type="password" value={password || ""} onChange={(e) => setPassword(e.target.value)} placeholder="Password" style={{marginTop:'10px'}} />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" style={{marginTop:'10px'}} />
           <div style={{marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
             <button onClick={handleAuth} style={{background: isLogin ? 'linear-gradient(45deg, #ff758c, #ff7eb3)' : '#2ecc71', fontWeight: 'bold', color: 'white'}}>{isLogin ? "Login" : "Create Our Account ✨"}</button>
             <button onClick={() => setIsLogin(!isLogin)} style={{background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', fontSize: '0.8rem', borderRadius: '25px', backdropFilter: 'blur(10px)'}}>{isLogin ? "New user? Create Our Account" : "Back to Login"}</button>
@@ -149,7 +166,7 @@ function App() {
     return (
       <div className="container">
         <div className="logo-container"><div className="heart-link"><div className="heart heart-1"></div><div className="heart heart-2"></div></div><h1 className="logo-text">Bondify</h1></div>
-        <div className="card"><h3>Connect Hearts 🔗</h3><input value={tempCode || ""} placeholder="Secret Code" onChange={(e) => setTempCode(e.target.value)} /><button onClick={() => set(ref(db, `users/${user.uid}/coupleCode`), tempCode.toLowerCase().trim())}>Link with Partner</button></div>
+        <div className="card"><h3>Connect Hearts 🔗</h3><input value={tempCode} placeholder="Secret Code" onChange={(e) => setTempCode(e.target.value)} /><button onClick={() => set(ref(db, `users/${user.uid}/coupleCode`), tempCode.toLowerCase().trim())}>Link with Partner</button></div>
       </div>
     );
   }
@@ -157,10 +174,13 @@ function App() {
   return (
     <div className="container">
       <div className="user-bar"><span>🔒 {coupleCode}</span><button className="logout-btn" onClick={() => signOut(auth)}>Logout</button></div>
+      
       <div className="stats-badge">Day {diffInDays} of Us ✨</div>
-      <div className="logo-container"><div className="heart-link"><div className="heart heart-1"></div><div className="heart heart-2"></div></div><h1 className="logo-text">Bondify</h1></div>
+      
+      <div className="quick-actions">
+        <button className="nudge-btn" onClick={sendNudge}>Send Nudge 💓</button>
+      </div>
 
-      {/* MOOD & CHAT BOX COMBINED */}
       <div className="card mood-card">
         <div className="mood-display">
           <div className="mood-box">
@@ -172,6 +192,7 @@ function App() {
         </div>
 
         <div className="chat-container">
+          {isPartnerTyping && <div className="typing-indicator">Your partner is typing... ✍️</div>}
           <div className="chat-window">
             {messages.map((m, i) => (
               <div key={i} className={`msg-bubble ${m.sender === user.uid ? "msg-me" : "msg-partner"}`}>
@@ -181,61 +202,46 @@ function App() {
             <div ref={chatEndRef} />
           </div>
           <form className="chat-input-area" onSubmit={sendChatMessage}>
-            <input value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} placeholder="Type a message..." />
+            <input value={chatMsg} onChange={(e) => handleTyping(e.target.value)} placeholder="Type a message..." />
             <button type="submit">🕊️</button>
           </form>
         </div>
       </div>
 
-      <div className="card">
-        <h3>Relationship Milestones 🏆</h3>
-        <div className="flex-row"><input value={milestone} onChange={(e) => setMilestone(e.target.value)} placeholder="Next date idea?" /><button onClick={addMilestone} style={{width: '60px'}}>+</button></div>
-        <div style={{marginTop: '15px', textAlign: 'left'}}>
+      <div className="card goal-tracker">
+        <h3>Shared Milestones 🏆</h3>
+        <div className="progress-bar-container">
+            <div className="progress-bar" style={{width: `${(milestones.filter(m => m.completed).length / milestones.length) * 100 || 0}%`}}></div>
+        </div>
+        <div className="flex-row"><input value={milestone} onChange={(e) => setMilestone(e.target.value)} placeholder="Add a new goal..." /><button onClick={() => { if(!milestone) return; push(ref(db, `couples/${coupleCode}/milestones`), { text: milestone, completed: false }); setMilestone(""); }} style={{width: '60px'}}>+</button></div>
+        <div className="milestone-list">
           {milestones.map((m) => (
-            <div key={m.id} style={{padding: '10px', background: m.completed ? 'rgba(46, 204, 113, 0.1)' : 'white', borderRadius: '10px', marginBottom: '8px', borderLeft: m.completed ? '4px solid #2ecc71' : '4px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-              <div onClick={() => update(ref(db, `couples/${coupleCode}/milestones/${m.id}`), { completed: !m.completed })} style={{cursor: 'pointer', flexGrow: 1, textDecoration: m.completed ? 'line-through' : 'none'}}>
-                <span>{m.completed ? "✅ " : "⏳ "}</span>{m.text}
-              </div>
-              <button onClick={() => remove(ref(db, `couples/${coupleCode}/milestones/${m.id}`))} style={{width: 'auto', background: 'transparent', color: '#ff758c', boxShadow: 'none'}}>✕</button>
+            <div key={m.id} className={`milestone-item ${m.completed ? 'is-done' : ''}`} onClick={() => update(ref(db, `couples/${coupleCode}/milestones/${m.id}`), { completed: !m.completed })}>
+              <span>{m.completed ? "✅" : "⏳"}</span> {m.text}
             </div>
           ))}
         </div>
       </div>
-
-      <div className="card">
-        <h3>Send a Love Note 💌</h3>
-        <input value={note || ""} onChange={(e) => setNote(e.target.value)} placeholder="Type something sweet..." />
-        <button onClick={() => { if(!note) return; set(ref(db, `couples/${coupleCode}/notes/${user.uid}`), note); setNote(""); alert("Sent!"); }}>Send Note</button>
-      </div>
-
-      {displayNote && (
-        <div className="card note-card-display">
-          <small>A note from your partner: 💌</small><p>"{displayNote}"</p>
-          <button className="clear-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/notes`))}>Read & Clear</button>
-        </div>
-      )}
 
       <div className="card">
         <p className="actual-q">"{currentQuestion}"</p>
-        <textarea value={answer || ""} onChange={(e) => setAnswer(e.target.value)} placeholder="Your answer..." />
-        <div className="flex-row"><input value={pro || ""} onChange={(e) => setPro(e.target.value)} placeholder="Pro (+)" /><input value={con || ""} onChange={(e) => setCon(e.target.value)} placeholder="Con (-)" /></div>
-        <button onClick={() => { if(!answer) return; push(ref(db, `couples/${coupleCode}/logs`), { user: user.email.split('@')[0], date: new Date().toLocaleDateString(), question: currentQuestion, answer, pro, con, timestamp: Date.now() }); setAnswer(""); setPro(""); setCon(""); }}>Save Memory</button>
+        <textarea value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Today's thought..." />
+        <div className="flex-row"><input value={pro} onChange={(e) => setPro(e.target.value)} placeholder="Pro (+)" /><input value={con} onChange={(e) => setCon(e.target.value)} placeholder="Con (-)" /></div>
+        <button onClick={() => { if(!answer) return; push(ref(db, `couples/${coupleCode}/logs`), { user: user.email.split('@')[0], date: new Date().toLocaleDateString(), question: currentQuestion, answer, pro, con, timestamp: serverTimestamp() }); setAnswer(""); setPro(""); setCon(""); }}>Save Memory</button>
       </div>
 
-      <div className="card">
+      <div className="card vibe-card">
         <h3>Our Vibes 🎵</h3>
-        <div className="flex-row"><input value={songLink || ""} onChange={(e) => setSongLink(e.target.value)} placeholder="Spotify link..." /><button onClick={() => { if(!songLink) return; push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink.trim(), user: user.email.split('@')[0], timestamp: Date.now() }); setSongLink(""); }}>+</button></div>
-        <div className="playlist-list" style={{marginTop:'15px'}}>
+        <div className="flex-row"><input value={songLink} onChange={(e) => setSongLink(e.target.value)} placeholder="Spotify Link" /><button onClick={() => { if(!songLink) return; push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink.trim(), user: user.email.split('@')[0], timestamp: serverTimestamp() }); setSongLink(""); }}>+</button></div>
+        <div className="playlist-list">
           {playlist.map((s) => (
-            <div key={s.id} className="song-item" style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '8px', padding: '10px', background: 'rgba(255,255,255,0.4)', borderRadius: '12px'}}>
-              <div style={{textAlign: 'left'}}><small>{s.user}'s Pick:</small><div>Shared Vibe</div></div>
-              <a href={s.link} target="_blank" rel="noreferrer" style={{textDecoration:'none', background:'var(--primary-pink)', color:'white', padding: '5px 15px', borderRadius: '20px', fontSize: '0.8rem'}}>▶ Play</a>
+            <div key={s.id} className="song-item">
+                <span>{s.user}'s Pick</span>
+                <a href={s.link} target="_blank" rel="noreferrer">Listen ▶</a>
             </div>
           ))}
         </div>
       </div>
-
-      <div className="history-section"><h2>Our Journey 📖</h2>{history.map((item, i) => (<div key={i} className="history-card"><div className="h-card-header"><span>{item.date}</span><span>by {item.user}</span></div><p className="h-question">Q: {item.question}</p><p className="h-answer">"{item.answer}"</p></div>))}</div>
     </div>
   );
 }

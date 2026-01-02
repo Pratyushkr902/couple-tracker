@@ -5,12 +5,12 @@
 :root {
   --primary-pink: #ff758c;
   --secondary-pink: #ff7eb3;
-  --soft-white: rgba(255, 255, 255, 0.94);
-  --sticky-note: #fff9db;
-  --sticky-border: #fab005;
-  --glass-bg: rgba(255, 255, 255, 0.2);
+  --romantic-purple: #a29bfe;
+  --soft-white: rgba(255, 255, 255, 0.96);
+  --glass-bg: rgba(255, 255, 255, 0.25);
   --success-green: #2ecc71;
-  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --card-shadow: 0 20px 40px rgba(255, 117, 140, 0.15);
+  --gold-accent: #f1c40f;
 }
 
 /* --- Global Setup --- */
@@ -18,11 +18,11 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background: linear-gradient(-45deg, #ff9a9e, #fecfef, #fe9a9e, #fbc2eb);
+  background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
   background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
+  animation: gradientBG 18s ease infinite;
   font-family: 'Poppins', sans-serif;
-  color: #4a4a4a;
+  color: #444;
   overflow-x: hidden;
 }
 
@@ -45,224 +45,236 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  margin: 20px 0 30px 0;
+  margin: 30px 0 40px 0;
 }
 
 .logo-text {
   font-family: 'Dancing Script', cursive;
-  font-size: 4rem !important; 
+  font-size: 4.5rem !important; 
   margin: 0 !important;
   color: white;
-  text-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 10px 20px rgba(255, 117, 140, 0.4), 0 0 40px rgba(255, 255, 255, 0.3);
 }
 
 .heart-link {
   display: flex;
   position: relative;
-  height: 40px;
-  width: 70px;
-  margin-bottom: 10px;
+  height: 45px;
+  width: 75px;
+  margin-bottom: 15px;
 }
 
 .heart {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   background-color: white;
   transform: rotate(-45deg);
+  box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
 }
 
 .heart::before, .heart::after {
   content: "";
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   background-color: white;
   border-radius: 50%;
 }
-.heart::before { top: -15px; left: 0; }
-.heart::after { left: 15px; top: 0; }
+.heart::before { top: -16px; left: 0; }
+.heart::after { left: 16px; top: 0; }
 
 .heart-1 { left: 5px; animation: pulse 2s infinite; z-index: 2; }
-.heart-2 { right: 5px; background-color: #ffe0e6; animation: pulse 2s infinite reverse; z-index: 1; }
-.heart-2::before, .heart-2::after { background-color: #ffe0e6; }
+.heart-2 { right: 5px; background-color: #ffdce3; animation: pulse 2s infinite reverse; z-index: 1; }
+.heart-2::before, .heart-2::after { background-color: #ffdce3; }
 
 @keyframes pulse {
   0%, 100% { transform: rotate(-45deg) scale(1); }
-  50% { transform: rotate(-45deg) scale(1.1); }
+  50% { transform: rotate(-45deg) scale(1.15); }
 }
 
-/* --- Authentication & Navigation --- */
-.shadow-glass {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 30px;
-  padding: 40px 30px;
-}
-
-.user-bar {
+/* --- Quick Actions & Nudge --- */
+.quick-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--glass-bg);
-  padding: 12px 20px;
-  border-radius: 50px;
+  justify-content: center;
   margin-bottom: 20px;
-  color: white;
-  font-size: 0.85rem;
-  backdrop-filter: blur(10px);
 }
 
-.stats-badge {
-  background: white;
-  padding: 10px 25px;
-  border-radius: 50px;
+.nudge-btn {
+  background: white !important;
+  color: var(--primary-pink) !important;
+  border: 2px solid var(--primary-pink) !important;
+  padding: 8px 25px !important;
+  width: auto !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 5px 15px rgba(255, 117, 140, 0.2) !important;
+}
+
+/* --- Typing Indicator --- */
+.typing-indicator {
+  font-size: 0.8rem;
   color: var(--primary-pink);
-  font-weight: 700;
-  display: inline-block;
-  margin-bottom: 25px;
-  box-shadow: var(--card-shadow);
+  font-style: italic;
+  margin-bottom: 8px;
+  text-align: left;
+  animation: fadeIn 0.5s ease;
 }
 
-/* --- Card System --- */
-.card {
-  background: var(--soft-white);
-  border-radius: 28px;
-  padding: 30px;
-  box-shadow: var(--card-shadow);
-  margin-bottom: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
 }
 
-/* --- CHAT BOX INTEGRATION (Clean Version) --- */
-.chat-container {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(0,0,0,0.05);
-}
-
+/* --- Chat System --- */
 .chat-window {
-  height: 200px;
+  height: 220px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 15px;
-  margin-bottom: 12px;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .msg-bubble {
   max-width: 80%;
-  padding: 8px 14px;
-  border-radius: 16px;
-  font-size: 0.85rem;
-  text-align: left;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 
 .msg-me {
   align-self: flex-end;
-  background: var(--primary-pink);
+  background: linear-gradient(135deg, var(--primary-pink), var(--secondary-pink));
   color: white;
-  border-bottom-right-radius: 2px;
+  border-bottom-right-radius: 4px;
 }
 
 .msg-partner {
   align-self: flex-start;
   background: white;
   color: #444;
-  border-bottom-left-radius: 2px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-.chat-input-area {
-  display: flex;
-  gap: 8px;
+/* --- Milestone Progress Bar --- */
+.progress-bar-container {
+  width: 100%;
+  height: 12px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
-.chat-input-area input {
-  margin-bottom: 0 !important;
-  padding: 10px 15px !important;
-  border-radius: 25px !important;
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--success-green), #81ecec);
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.chat-input-area button {
-  width: 45px !important;
-  padding: 0 !important;
-  border-radius: 50% !important;
-}
-
-/* --- MILESTONES (Clean Professional) --- */
 .milestone-item {
   display: flex;
   align-items: center;
-  padding: 12px;
+  padding: 14px;
   background: white;
-  border-radius: 14px;
-  margin-bottom: 8px;
-  border-left: 5px solid #ddd;
-  transition: 0.3s;
+  border-radius: 18px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: left;
+  border: 1px solid transparent;
 }
 
-.milestone-item.completed {
-  border-left-color: var(--success-green);
-  background: rgba(46, 204, 113, 0.05);
+.milestone-item.is-done {
+  background: rgba(255, 255, 255, 0.6);
+  opacity: 0.7;
+  text-decoration: line-through;
+  border-left: 6px solid var(--success-green);
 }
 
-/* --- Standard Inputs & Buttons --- */
+/* --- Card Styling --- */
+.card {
+  background: var(--soft-white);
+  backdrop-filter: blur(20px);
+  border-radius: 35px;
+  padding: 35px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.vibe-card .song-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: linear-gradient(to right, white, rgba(255, 255, 255, 0.5));
+  border-radius: 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
+
+.vibe-card a {
+  text-decoration: none;
+  color: var(--primary-pink);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* --- Forms & Buttons --- */
 textarea, input {
   width: 100%;
-  border: 1px solid #eee;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 12px;
-  box-sizing: border-box;
+  border: 2px solid #f2f2f2;
+  border-radius: 18px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #fdfdfd;
   font-family: 'Poppins', sans-serif;
-  outline: none;
+  transition: 0.3s;
 }
 
 button {
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(45deg, var(--primary-pink), var(--secondary-pink));
+  padding: 16px;
+  background: linear-gradient(45deg, var(--primary-pink), var(--romantic-purple));
   color: white;
   border: none;
-  border-radius: 14px;
+  border-radius: 18px;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.3s;
+  transition: 0.4s;
+  box-shadow: 0 10px 20px rgba(255, 117, 140, 0.2);
 }
 
-/* Signup Success Button Fix */
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(255, 117, 140, 0.3);
+}
+
+/* Registration Button */
 button[style*="#2ecc71"] {
-  background: var(--success-green) !important;
-  box-shadow: 0 8px 20px rgba(46, 204, 113, 0.2) !important;
+  background: linear-gradient(45deg, var(--success-green), #55efc4) !important;
 }
 
-/* --- Sticky Notes & History --- */
-.note-card-display {
-  background: var(--sticky-note) !important;
-  border: 1px solid var(--sticky-border) !important;
-  color: #862e10 !important;
-  font-family: 'Dancing Script', cursive;
-  font-size: 1.4rem;
-  transform: rotate(-1deg);
-}
-
+/* --- History --- */
 .history-card {
   background: white;
-  padding: 22px;
-  border-radius: 24px;
-  margin-bottom: 15px;
-  border-left: 8px solid var(--primary-pink);
+  padding: 25px;
+  border-radius: 30px;
+  margin-bottom: 20px;
+  border-left: 10px solid var(--primary-pink);
   text-align: left;
 }
 
-/* --- Mobile Responsiveness --- */
+/* --- Mobile --- */
 @media (max-width: 400px) {
-  .logo-text { font-size: 3rem !important; }
-  .card { padding: 20px; }
+  .logo-text { font-size: 3.2rem !important; }
 }
