@@ -1,324 +1,55 @@
-/* --- 1. CORE FONTS & ROOT CONFIG --- */
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap');
 
 :root {
   --primary-pink: #ff758c;
   --secondary-pink: #ff7eb3;
-  --romantic-purple: #a29bfe;
   --soft-white: rgba(255, 255, 255, 0.96);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --success-green: #2ecc71;
-  --card-shadow: 0 20px 40px rgba(255, 117, 140, 0.15);
-  --gold-accent: #f1c40f;
-  --sticky-note: #fff9db;
-  --sticky-border: #fab005;
-  --blue-note: #f0f4ff;
-  --blue-border: #74c0fc;
-  --truth-blue: #74b9ff;
-  --dare-red: #ff7675;
 }
 
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  margin: 0;
-  padding: 0;
-}
-
-/* --- 2. GLOBAL THEME & ANIMATIONS --- */
 body {
-  min-height: 100vh;
+  margin: 0; padding: 0; min-height: 100vh;
   background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
-  background-size: 400% 400%;
-  animation: gradientBG 18s ease infinite;
-  font-family: 'Poppins', sans-serif;
-  color: #444;
-  overflow-x: hidden;
+  background-size: 400% 400%; animation: gradientBG 15s ease infinite;
+  font-family: 'Poppins', sans-serif; overflow-x: hidden;
 }
 
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+@keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-.container {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 20px;
-  text-align: center;
-  padding-bottom: 120px;
-  transition: transform 0.1s;
-}
+.container { max-width: 480px; margin: 0 auto; padding: 20px; transition: 0.3s; }
 
-/* Nudge/Shake Animation */
-.nudge-shake {
-  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-}
-
-@keyframes shake {
-  10%, 90% { transform: translate3d(-1px, 0, 0); }
-  20%, 80% { transform: translate3d(2px, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-  40%, 60% { transform: translate3d(4px, 0, 0); }
-}
-
-/* --- 3. FONTS & UTILITIES --- */
-.cursive-text, .cursive-chat, .sticky-note p, .daily-q, .sticky-q, .sticky-a {
-  font-family: 'Dancing Script', cursive !important;
-  font-weight: 700;
-}
-
-.original-font {
-  font-family: 'Poppins', sans-serif !important;
-  font-weight: 400;
-}
-
-/* --- 4. AUTHENTICATION & LINKING --- */
-.auth-bg {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 90vh;
-}
-
-.shadow-glass {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 40px;
-  padding: 40px 30px;
-  box-shadow: var(--card-shadow);
-}
-
-.logo-text {
-  font-family: 'Dancing Script', cursive;
-  font-size: 4.5rem !important;
-  color: white;
-  text-shadow: 0 10px 20px rgba(255, 117, 140, 0.4);
-}
-
-.user-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 12px 20px;
-  border-radius: 50px;
-  margin-bottom: 20px;
-  color: white;
-  border: 1px solid var(--glass-border);
-}
-
-/* --- 5. SETTINGS & DYNAMIC COUNTDOWN --- */
-.settings-card {
-  border: 2px dashed var(--primary-pink);
-  padding: 15px !important;
-  background: rgba(255, 255, 255, 0.6) !important;
-}
-
-.countdown-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 25px;
-}
-
-.date-pill {
-  background: white;
-  border-radius: 20px;
-  padding: 10px;
-  border: 1px solid var(--primary-pink);
-  box-shadow: 0 5px 15px rgba(255, 117, 140, 0.1);
-}
-
-.date-pill h4 { font-size: 0.55rem; text-transform: uppercase; color: #aaa; margin-bottom: 5px; }
-.date-pill p { font-weight: 700; color: var(--primary-pink); font-size: 0.75rem; }
-
-/* --- 6. TRUTH & DARE GAME --- */
-.game-card { border: 2.5px solid var(--romantic-purple) !important; }
-.truth-btn { background: var(--truth-blue) !important; color: white; border: none; padding: 12px; border-radius: 15px; cursor: pointer; font-weight: 600; margin-right: 10px; }
-.dare-btn { background: var(--dare-red) !important; color: white; border: none; padding: 12px; border-radius: 15px; cursor: pointer; font-weight: 600; }
-
-.game-box {
-  margin-top: 15px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 20px;
-  border-left: 10px solid var(--romantic-purple);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-}
-
-/* --- 7. LARGE CHAT ENGINE & MOODS --- */
-.large-chat-container { min-height: 650px; }
-
-.large-window {
-  height: 400px !important; 
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.4) !important;
-  border-radius: 30px;
-  border: 1.5px solid rgba(255, 117, 140, 0.2);
-  scrollbar-width: none;
-}
-
-.msg-bubble {
-  max-width: 80%;
-  padding: 12px 18px;
-  border-radius: 22px;
-  font-size: 1rem;
-  line-height: 1.4;
-}
-
-.msg-me { align-self: flex-end; background: var(--primary-pink); color: white; border-bottom-right-radius: 4px; }
-
-.partner-style {
-  align-self: flex-start;
-  background: white !important;
-  color: var(--primary-pink) !important;
-  border: 2px solid var(--primary-pink) !important;
-  font-family: 'Dancing Script', cursive !important;
-  font-size: 1.3rem;
+/* FONT LOGIC */
+.original-font { font-family: 'Poppins', sans-serif !important; font-size: 1rem !important; }
+.partner-style { 
+  font-family: 'Dancing Script', cursive !important; 
+  background: white !important; 
+  color: var(--primary-pink) !important; 
+  border: 1.5px solid var(--primary-pink) !important; 
+  text-align: left; 
+  font-size: 1.25rem !important;
   border-bottom-left-radius: 4px;
-  box-shadow: 0 4px 15px rgba(255, 117, 140, 0.1);
 }
+.msg-me { background: var(--primary-pink); color: white; margin-left: auto; border-bottom-right-radius: 4px; }
 
-.large-emoji-mood button {
-  font-size: 2.2rem !important;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-}
+/* CHAT AREA */
+.large-window { height: 450px !important; overflow-y: auto; background: rgba(255,255,255,0.2); border-radius: 25px; padding: 15px; margin-bottom: 15px; }
+.chat-input-bar { display: flex; align-items: center; gap: 8px; background: white; padding: 10px; border-radius: 30px; }
+.media-buttons button { border: none; background: #f0f0f0; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer; }
+.chat-textarea { flex: 1; height: 45px; border-radius: 20px; padding: 10px; border: none; resize: none; outline: none; }
+.send-btn-icon { border: none; background: var(--primary-pink); color: white; width: 45px; height: 45px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; }
 
-.large-emoji-display {
-  font-size: 4rem !important;
-  animation: heartBeat 1.5s infinite;
-}
+/* NUDGE & MOOD */
+.nudge-shake { animation: shake 0.5s both; }
+@keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } }
+.partner-emoji-display { font-size: 4.5rem !important; animation: pulse 2s infinite; cursor: pointer; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+.large-emoji-mood button { font-size: 2.2rem; background: none; border: none; cursor: pointer; }
 
-@keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+/* VIBES & BUCKET */
+.vibe-item { display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 12px; margin-bottom: 8px; }
+.rm-btn { color: #ff7675; border: none; background: none; font-size: 1.4rem; cursor: pointer; }
+.milestone-img { width: 100%; height: 130px; object-fit: cover; filter: grayscale(100%); transition: 0.8s; border-radius: 10px; }
+.milestone-card.completed .milestone-img { filter: grayscale(0%); }
 
-/* Android Optimized Input */
-.chat-textarea {
-  height: 95px !important;
-  resize: none;
-  font-size: 1.1rem !important;
-  border: 1.5px solid var(--primary-pink) !important;
-  border-radius: 20px !important;
-  padding: 15px !important;
-  background: white !important;
-}
-
-/* --- 8. VIBES & SHAYARI WITH REMOVE --- */
-.vibe-card { background: var(--soft-white); }
-.input-group { display: flex; gap: 10px; margin-bottom: 12px; }
-
-.plus-btn {
-  width: 50px !important;
-  background: var(--primary-pink) !important;
-  color: white !important;
-  border-radius: 12px !important;
-  font-size: 1.5rem !important;
-  border: none;
-}
-
-.vibe-scroller { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-.vibe-item, .shayari-item {
-  display: flex; justify-content: space-between; align-items: center;
-  background: white; padding: 15px; border-radius: 18px; box-shadow: 0 5px 15px rgba(0,0,0,0.02);
-}
-
-.rm-btn {
-  background: rgba(255, 118, 117, 0.1);
-  color: var(--dare-red);
-  border: none; width: 28px; height: 28px;
-  border-radius: 50%; cursor: pointer;
-  font-size: 1.2rem; display: flex; justify-content: center; align-items: center;
-}
-
-/* --- 9. SCRAPBOOK LOGS & FILTERS --- */
-.sticky-note {
-  background: var(--sticky-note);
-  padding: 30px;
-  border-radius: 2px;
-  box-shadow: 10px 15px 30px rgba(0,0,0,0.1);
-  transform: rotate(-1.5deg);
-  border-left: 8px solid var(--sticky-border);
-  position: relative;
-  text-align: left;
-  margin-bottom: 40px;
-}
-
-.sticky-note:nth-child(even) {
-  transform: rotate(1.5deg);
-  background: var(--blue-note);
-  border-left-color: var(--blue-border);
-}
-
-.sticky-note::after {
-  content: "📌";
-  position: absolute;
-  top: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.8rem;
-}
-
-.milestone-img {
-  width: 100%; height: 120px; object-fit: cover;
-  filter: grayscale(100%); transition: 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.milestone-card.completed .milestone-img {
-  filter: grayscale(0%) contrast(1.1);
-}
-
-/* --- 10. REACTION ENGINE --- */
-.floating-heart {
-  position: fixed;
-  bottom: -50px;
-  font-size: 2.8rem;
-  z-index: 1000;
-  pointer-events: none;
-  animation: floatUp 3.5s ease-out forwards;
-}
-
-@keyframes floatUp {
-  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-  100% { transform: translateY(-120vh) rotate(45deg) scale(1.8); opacity: 0; }
-}
-
-/* --- 11. GENERAL UI --- */
-.card {
-  background: var(--soft-white);
-  backdrop-filter: blur(20px);
-  border-radius: 35px;
-  padding: 30px;
-  margin-bottom: 30px;
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--card-shadow);
-}
-
-.modern-input, .modern-textarea {
-  width: 100%; border: 2px solid #eee; border-radius: 18px;
-  padding: 15px; margin-bottom: 10px; background: #fff;
-  font-family: 'Poppins', sans-serif; outline: none; transition: 0.3s;
-}
-
-.modern-input:focus { border-color: var(--primary-pink); }
-
-.primary-btn {
-  width: 100%; padding: 16px;
-  background: linear-gradient(45deg, var(--primary-pink), var(--secondary-pink));
-  color: white; border: none; border-radius: 18px; font-weight: 600;
-  cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
-}
-
-.nudge-btn {
-  background: #ffeaa7; color: #d63031; border: none; padding: 8px 15px;
-  border-radius: 20px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-top: 10px;
-}
+.card { background: var(--soft-white); border-radius: 35px; padding: 25px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.5); }
+.primary-btn { width: 100%; background: linear-gradient(45deg, var(--primary-pink), var(--secondary-pink)); color: white; border: none; padding: 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+.modern-input { width: 100%; border-radius: 15px; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; box-sizing: border-box; }
