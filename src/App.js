@@ -12,19 +12,18 @@ function App() {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
 
-  // --- ALL APP STATES ---
+  // --- ALL APP STATES (Initialized correctly to avoid warnings) ---
   const [pro, setPro] = useState("");
   const [con, setCon] = useState("");
   const [answer, setAnswer] = useState("");
   const [history, setHistory] = useState([]);
   const [songLink, setSongLink] = useState("");
   const [playlist, setPlaylist] = useState([]);
-  const [bucketItem, setBucketItem] = useState("");
   const [bucketList, setBucketList] = useState([]);
   const [myMood, setMyMood] = useState("🤍");
   const [partnerMood, setPartnerMood] = useState("🤍");
-  const [note, setNote] = useState("");
-  const [displayNote, setDisplayNote] = useState("");
+  const [note, setNote] = useState(""); // Input for sending a note
+  const [displayNote, setDisplayNote] = useState(""); // Receiving a note
   const [capsuleMessage, setCapsuleMessage] = useState("");
   const [unlockDate, setUnlockDate] = useState("");
   const [capsules, setCapsules] = useState([]);
@@ -50,10 +49,8 @@ function App() {
           const code = snapshot.val();
           setCoupleCode(code);
           if (code) {
-            // Real-time Listeners
             onValue(ref(db, `couples/${code}/logs`), (s) => setHistory(s.val() ? Object.values(s.val()).reverse() : []));
             onValue(ref(db, `couples/${code}/playlist`), (s) => setPlaylist(s.val() ? Object.values(s.val()).reverse() : []));
-            onValue(ref(db, `couples/${code}/bucketList`), (s) => setBucketList(s.val() ? Object.values(s.val()) : []));
             onValue(ref(db, `couples/${code}/capsules`), (s) => setCapsules(s.val() ? Object.values(s.val()) : []));
             
             onValue(ref(db, `couples/${code}/moods`), (s) => {
@@ -98,6 +95,13 @@ function App() {
     setAnswer(""); setPro(""); setCon("");
   };
 
+  const sendNote = async () => {
+    if (!note) return;
+    await set(ref(db, `couples/${coupleCode}/notes/${user.uid}`), note);
+    setNote("");
+    alert("Love note sent! 💌");
+  };
+
   const sealCapsule = async () => {
     if (!capsuleMessage || !unlockDate) return alert("Pick date and message!");
     await push(ref(db, `couples/${coupleCode}/capsules`), {
@@ -107,7 +111,6 @@ function App() {
       timestamp: Date.now()
     });
     setCapsuleMessage(""); setUnlockDate("");
-    alert("Sealed in the Time Capsule! 🔒");
   };
 
   if (!user) {
@@ -115,10 +118,10 @@ function App() {
       <div className="container">
         <h1>{isLogin ? "Welcome Back 💖" : "Start Your Journey"}</h1>
         <div className="card shadow-glass">
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+          <input type="email" value={email || ""} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+          <input type="password" value={password || ""} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
           <button onClick={handleAuth}>{isLogin ? "Login" : "Sign Up"}</button>
-          <p onClick={() => setIsLogin(!isLogin)} style={{cursor: 'pointer', color: 'white'}}>{isLogin ? "Need an account? Sign up" : "Already have an account? Login"}</p>
+          <p onClick={() => setIsLogin(!isLogin)} style={{cursor: 'pointer', color: 'white', marginTop: '10px'}}>{isLogin ? "Need an account? Sign up" : "Already have an account? Login"}</p>
         </div>
       </div>
     );
@@ -130,7 +133,7 @@ function App() {
         <h1>Connect Hearts 🔗</h1>
         <div className="card">
           <p>Enter your secret shared code:</p>
-          <input placeholder="Secret Code" onChange={(e) => setTempCode(e.target.value)} />
+          <input value={tempCode || ""} placeholder="Secret Code" onChange={(e) => setTempCode(e.target.value)} />
           <button onClick={() => set(ref(db, `users/${user.uid}/coupleCode`), tempCode.toLowerCase().trim())}>Link with Partner</button>
         </div>
       </div>
@@ -164,7 +167,13 @@ function App() {
         </div>
       </div>
 
-      {/* SECRET NOTE */}
+      {/* SEND & RECEIVE NOTES */}
+      <div className="card">
+        <h3>Send a Love Note 💌</h3>
+        <input value={note || ""} onChange={(e) => setNote(e.target.value)} placeholder="Type something sweet..." />
+        <button onClick={sendNote}>Send Note</button>
+      </div>
+
       {displayNote && (
         <div className="card note-card-display">
           <small>A note from your partner: 💌</small>
@@ -176,10 +185,10 @@ function App() {
       {/* DAILY MEMORY */}
       <div className="card">
         <p className="actual-q">"{currentQuestion}"</p>
-        <textarea value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Your answer..." />
+        <textarea value={answer || ""} onChange={(e) => setAnswer(e.target.value)} placeholder="Your answer..." />
         <div className="flex-row">
-          <input value={pro} onChange={(e) => setPro(e.target.value)} placeholder="Pro (+)" />
-          <input value={con} onChange={(e) => setCon(e.target.value)} placeholder="Con (-)" />
+          <input value={pro || ""} onChange={(e) => setPro(e.target.value)} placeholder="Pro (+)" />
+          <input value={con || ""} onChange={(e) => setCon(e.target.value)} placeholder="Con (-)" />
         </div>
         <button onClick={handleAddLog}>Save Today's Memory</button>
       </div>
@@ -187,9 +196,9 @@ function App() {
       {/* TIME CAPSULE */}
       <div className="card capsule-card">
         <h3>Time Capsule ⏳</h3>
-        <textarea value={capsuleMessage} onChange={(e) => setCapsuleMessage(e.target.value)} placeholder="A message for the future..." />
+        <textarea value={capsuleMessage || ""} onChange={(e) => setCapsuleMessage(e.target.value)} placeholder="A message for the future..." />
         <div className="flex-row">
-          <input type="date" value={unlockDate} onChange={(e) => setUnlockDate(e.target.value)} />
+          <input type="date" value={unlockDate || ""} onChange={(e) => setUnlockDate(e.target.value)} />
           <button onClick={sealCapsule}>Seal 🔒</button>
         </div>
         <div className="capsule-container">
@@ -204,11 +213,11 @@ function App() {
         </div>
       </div>
 
-      {/* PLAYLIST & BUCKET LIST */}
+      {/* PLAYLIST */}
       <div className="card">
         <h3>Our Vibes 🎵</h3>
         <div className="flex-row">
-          <input value={songLink} onChange={(e) => setSongLink(e.target.value)} placeholder="Song link..." />
+          <input value={songLink || ""} onChange={(e) => setSongLink(e.target.value)} placeholder="Song link..." />
           <button onClick={() => { push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink, user: user.email.split('@')[0], timestamp: Date.now() }); setSongLink(""); }}>+</button>
         </div>
         <div className="playlist-list">
