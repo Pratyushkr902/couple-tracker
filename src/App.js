@@ -54,9 +54,29 @@ function App() {
           const code = snapshot.val();
           setCoupleCode(code);
           if (code) {
-            onValue(ref(db, `couples/${code}/logs`), (s) => setHistory(s.val() ? Object.values(s.val()).reverse() : []));
-            onValue(ref(db, `couples/${code}/playlist`), (s) => setPlaylist(s.val() ? Object.values(s.val()).reverse() : []));
+            // Listen for logs
+            onValue(ref(db, `couples/${code}/logs`), (s) => {
+              const data = s.val();
+              setHistory(data ? Object.values(data).reverse() : []);
+            });
+
+            // Listen for playlist - FIXED DATA RETRIEVAL
+            onValue(ref(db, `couples/${code}/playlist`), (s) => {
+              const data = s.val();
+              if (data) {
+                // Keep the ID from Firebase to ensure unique mapping
+                const list = Object.keys(data).map(key => ({
+                  id: key,
+                  ...data[key]
+                }));
+                setPlaylist(list.reverse());
+              } else {
+                setPlaylist([]);
+              }
+            });
+
             onValue(ref(db, `couples/${code}/capsules`), (s) => setCapsules(s.val() ? Object.values(s.val()) : []));
+            
             onValue(ref(db, `couples/${code}/moods`), (s) => {
               const moods = s.val();
               if (moods) {
@@ -65,6 +85,7 @@ function App() {
                 setMyMood(moods[currentUser.uid] || "🤍");
               }
             });
+
             onValue(ref(db, `couples/${code}/notes`), (s) => {
               const notes = s.val();
               if (notes) {
@@ -140,23 +161,15 @@ function App() {
           <input type="password" value={password || ""} onChange={(e) => setPassword(e.target.value)} placeholder="Password" style={{marginTop:'10px'}} />
           
           <div style={{marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
-            <button 
-              onClick={handleAuth} 
-              style={{background: isLogin ? '#e91e63' : '#2ecc71', fontWeight: 'bold'}}
-            >
+            <button onClick={handleAuth} style={{background: isLogin ? '#e91e63' : '#2ecc71', fontWeight: 'bold'}}>
               {isLogin ? "Login" : "Create Our Account ✨"}
             </button>
-
             {isLogin && (
               <div onClick={handleResetPassword} className="reset-link" style={{color: '#ff7eb3', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'center', textShadow: '0 0 8px rgba(255, 126, 179, 0.4)'}}>
                 Forgot Password? 🤍
               </div>
             )}
-
-            <button 
-              onClick={() => setIsLogin(!isLogin)} 
-              style={{background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', fontSize: '0.8rem', marginTop: '10px', borderRadius: '25px'}}
-            >
+            <button onClick={() => setIsLogin(!isLogin)} style={{background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', fontSize: '0.8rem', marginTop: '10px', borderRadius: '25px'}}>
               {isLogin ? "New user? Create Account" : "Back to Login"}
             </button>
           </div>
@@ -253,21 +266,41 @@ function App() {
         </div>
       </div>
 
+      {/* FIXED VIBES SECTION */}
       <div className="card">
         <h3>Our Vibes 🎵</h3>
         <div className="flex-row">
-          <input value={songLink || ""} onChange={(e) => setSongLink(e.target.value)} placeholder="Spotify link..." />
+          <input 
+            value={songLink || ""} 
+            onChange={(e) => setSongLink(e.target.value)} 
+            placeholder="Spotify/YouTube link..." 
+          />
           <button onClick={() => { 
             if(!songLink) return;
-            push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink, user: user.email.split('@')[0], timestamp: Date.now() }); 
+            push(ref(db, `couples/${coupleCode}/playlist`), { 
+              link: songLink.trim(), 
+              user: user.email.split('@')[0], 
+              timestamp: Date.now() 
+            }); 
             setSongLink(""); 
           }}>+</button>
         </div>
         <div className="playlist-list" style={{marginTop:'15px'}}>
-          {playlist.map((s, i) => (
-            <div key={i} className="song-item" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-              <a href={s.link} target="_blank" rel="noreferrer" style={{textDecoration:'none', color:'var(--primary-pink)', fontWeight:'600'}}>
-                ▶ {s.user}'s Pick #{playlist.length - i}
+          {playlist.map((s) => (
+            <div key={s.id} className="song-item" style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '8px', padding: '10px', background: 'rgba(255,255,255,0.4)', borderRadius: '12px'}}>
+              <div style={{textAlign: 'left'}}>
+                <small style={{fontSize: '0.7rem', color: '#777'}}>{s.user}'s Pick:</small>
+                <div style={{fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary-pink)'}}>Song Entry</div>
+              </div>
+              <a href={s.link} target="_blank" rel="noreferrer" style={{
+                textDecoration:'none', 
+                background:'var(--primary-pink)', 
+                color:'white', 
+                padding: '5px 15px', 
+                borderRadius: '20px',
+                fontSize: '0.8rem'
+              }}>
+                ▶ Play
               </a>
             </div>
           ))}
