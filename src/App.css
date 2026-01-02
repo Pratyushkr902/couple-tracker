@@ -111,26 +111,11 @@ body {
   border: 1px solid var(--glass-border);
 }
 
-.minimal-logout {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid white;
-  color: white;
-  padding: 5px 12px;
-  border-radius: 15px;
-  font-size: 0.7rem;
-  cursor: pointer;
-}
-
 /* --- 5. SETTINGS & DYNAMIC COUNTDOWN --- */
 .settings-card {
   border: 2px dashed var(--primary-pink);
   padding: 15px !important;
   background: rgba(255, 255, 255, 0.6) !important;
-}
-
-.small-btn {
-  padding: 8px !important;
-  font-size: 0.75rem !important;
 }
 
 .countdown-grid {
@@ -165,7 +150,7 @@ body {
   box-shadow: 0 10px 20px rgba(0,0,0,0.05);
 }
 
-/* --- 7. LARGE CHAT ENGINE --- */
+/* --- 7. LARGE CHAT ENGINE & MOODS --- */
 .large-chat-container { min-height: 650px; }
 
 .large-window {
@@ -185,7 +170,7 @@ body {
   max-width: 80%;
   padding: 12px 18px;
   border-radius: 22px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1.4;
 }
 
@@ -202,6 +187,21 @@ body {
   box-shadow: 0 4px 15px rgba(255, 117, 140, 0.1);
 }
 
+.large-emoji-mood button {
+  font-size: 2.2rem !important;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.large-emoji-display {
+  font-size: 4rem !important;
+  animation: heartBeat 1.5s infinite;
+}
+
+@keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
 /* Android Optimized Input */
 .chat-textarea {
   height: 95px !important;
@@ -211,35 +211,6 @@ body {
   border-radius: 20px !important;
   padding: 15px !important;
   background: white !important;
-}
-
-.chat-actions-row { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
-
-.camera-trigger {
-  background: white !important;
-  border: 1.5px solid var(--primary-pink) !important;
-  width: 50px !important; height: 50px !important;
-  border-radius: 50% !important;
-  font-size: 1.2rem !important;
-  display: flex; justify-content: center; align-items: center;
-  cursor: pointer;
-}
-
-.send-btn {
-  flex: 1;
-  background: linear-gradient(45deg, var(--primary-pink), var(--secondary-pink)) !important;
-  color: white !important;
-  border-radius: 20px !important;
-  padding: 12px !important;
-  font-weight: bold;
-}
-
-.chat-img-preview {
-  width: 100%;
-  max-height: 250px;
-  border-radius: 15px;
-  object-fit: cover;
-  border: 2px solid white;
 }
 
 /* --- 8. VIBES & SHAYARI WITH REMOVE --- */
@@ -253,7 +224,6 @@ body {
   border-radius: 12px !important;
   font-size: 1.5rem !important;
   border: none;
-  cursor: pointer;
 }
 
 .vibe-scroller { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
@@ -268,16 +238,6 @@ body {
   border: none; width: 28px; height: 28px;
   border-radius: 50%; cursor: pointer;
   font-size: 1.2rem; display: flex; justify-content: center; align-items: center;
-}
-
-.rm-btn:hover { background: var(--dare-red); color: white; }
-
-/* Spotify Embed Style */
-.song-container {
-  margin-top: 10px;
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
 }
 
 /* --- 9. SCRAPBOOK LOGS & FILTERS --- */
@@ -308,7 +268,6 @@ body {
   font-size: 1.8rem;
 }
 
-/* Milestone Grayscale Filter Logic */
 .milestone-img {
   width: 100%; height: 120px; object-fit: cover;
   filter: grayscale(100%); transition: 1s cubic-bezier(0.4, 0, 0.2, 1);
@@ -362,36 +321,4 @@ body {
 .nudge-btn {
   background: #ffeaa7; color: #d63031; border: none; padding: 8px 15px;
   border-radius: 20px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-top: 10px;
-}
-
-/* Sticky Love Note Popup */
-.sticky-note-card {
-  background: var(--sticky-note);
-  padding: 40px 20px 20px 20px;
-  border-radius: 5px;
-  box-shadow: 5px 10px 20px rgba(0,0,0,0.1);
-  transform: rotate(-1.5deg);
-  margin: 20px 0;
-  position: relative;
-  border: 1px solid var(--sticky-border);
-  font-size: 1.3rem;
-}
-
-.sticky-note-card::before {
-  content: "📌";
-  position: absolute;
-  top: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.5rem;
-}
-
-.animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-@keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-/* --- 12. MOBILE OPTIMIZATION --- */
-@media (max-width: 400px) {
-  .logo-text { font-size: 3rem !important; }
-  .large-window { height: 350px !important; }
-  .chat-textarea { height: 75px !important; }
 }
