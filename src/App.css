@@ -7,7 +7,7 @@
   --secondary-pink: #ff7eb3;
   --romantic-purple: #a29bfe;
   --soft-white: rgba(255, 255, 255, 0.96);
-  --glass-bg: rgba(255, 255, 255, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.5);
   --success-green: #2ecc71;
   --card-shadow: 0 20px 40px rgba(255, 117, 140, 0.15);
   --gold-accent: #f1c40f;
@@ -58,64 +58,102 @@ body {
   text-shadow: 0 10px 20px rgba(255, 117, 140, 0.4), 0 0 40px rgba(255, 255, 255, 0.3);
 }
 
-/* --- Anniversary & Stats --- */
-.anniversary-banner {
-  background: linear-gradient(45deg, var(--primary-pink), var(--gold-accent));
-  color: white;
-  padding: 20px;
-  border-radius: 25px;
+/* --- Pro Countdown Grid --- */
+.countdown-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   margin-bottom: 25px;
-  box-shadow: 0 10px 20px rgba(255, 117, 140, 0.4);
-  animation: celebrate 2s ease infinite;
 }
 
-@keyframes celebrate {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-}
-
-.stats-row {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.stat-pill {
+.date-pill {
   background: white;
-  padding: 8px 18px;
-  border-radius: 50px;
-  color: var(--primary-pink);
-  font-weight: 700;
-  font-size: 0.8rem;
-  box-shadow: var(--card-shadow);
+  border-radius: 20px;
+  padding: 12px;
+  border: 1px solid var(--primary-pink);
+  box-shadow: 0 5px 15px rgba(255, 117, 140, 0.1);
 }
 
-/* --- Authentication (Login/Signup) --- */
-.auth-bg {
+.date-pill h4 {
+  margin: 0;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #888;
+  letter-spacing: 1px;
+}
+
+.date-pill p {
+  margin: 4px 0 0 0;
+  font-weight: 700;
+  color: var(--primary-pink);
+  font-size: 0.85rem;
+}
+
+/* --- Sticky Notes (Journey History) --- */
+.journey-history {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 90vh;
+  gap: 25px;
+  margin-top: 30px;
 }
 
-.primary-btn {
-  background: linear-gradient(45deg, var(--primary-pink), var(--secondary-pink)) !important;
-  color: white !important;
-  border: none !important;
-  padding: 14px !important;
-  font-weight: bold !important;
-  border-radius: 18px !important;
-  cursor: pointer;
-  transition: 0.3s;
+.sticky-note {
+  background: var(--sticky-note);
+  padding: 25px;
+  border-radius: 2px;
+  box-shadow: 5px 10px 20px rgba(0,0,0,0.1);
+  transform: rotate(-1.5deg);
+  border-left: 6px solid var(--sticky-border);
+  position: relative;
+  text-align: left;
 }
 
-.toggle-auth {
-  color: white;
-  margin-top: 20px;
-  cursor: pointer;
+.sticky-note:nth-child(even) {
+  transform: rotate(1.5deg);
+  background: #f0f4ff; /* Professional blue tint for variety */
+  border-left-color: #74c0fc;
+}
+
+.sticky-note::after {
+  content: "📌";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.4rem;
+}
+
+.sticky-date {
+  font-size: 0.75rem;
+  color: #999;
   font-weight: 600;
-  text-decoration: underline;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.sticky-q {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.3rem;
+  color: #333;
+  margin: 0 0 10px 0;
+  line-height: 1.2;
+}
+
+.sticky-a {
+  font-size: 0.95rem;
+  margin: 0;
+  color: #444;
+}
+
+/* --- Card System with Borders --- */
+.card {
+  background: var(--soft-white);
+  backdrop-filter: blur(20px);
+  border-radius: 35px;
+  padding: 30px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 30px;
+  border: 1px solid var(--glass-border);
 }
 
 /* --- Bucket List Gallery --- */
@@ -131,88 +169,36 @@ body {
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  cursor: pointer;
-  transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.milestone-card:hover {
-  transform: scale(1.03);
+  border: 1px solid #eee;
 }
 
 .milestone-img {
   width: 100%;
-  height: 120px;
+  height: 110px;
   object-fit: cover;
-  filter: grayscale(100%); /* B&W for uncompleted */
+  filter: grayscale(100%);
   transition: 0.8s ease;
 }
 
 .milestone-card.completed .milestone-img {
-  filter: grayscale(0%); /* Full color for completed */
+  filter: grayscale(0%);
 }
-
-.milestone-card p {
-  padding: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin: 0;
-  color: #555;
-}
-
-/* --- Spotify Player & Vibes --- */
-.song-container {
-  margin-top: 15px;
-  background: rgba(255, 255, 255, 0.3);
-  padding: 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  text-align: left;
-}
-
-.song-container small {
-  display: block;
-  color: var(--primary-pink);
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-/* --- Chat & Mood Grid --- */
-.chat-window {
-  height: 250px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 25px;
-  scrollbar-width: none;
-}
-
-.msg-bubble {
-  max-width: 75%;
-  padding: 10px 16px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-}
-
-.msg-me { align-self: flex-end; background: var(--primary-pink); color: white; border-bottom-right-radius: 4px; margin-left: auto;}
-.msg-partner { align-self: flex-start; background: white; color: #444; border-bottom-left-radius: 4px; margin-right: auto;}
 
 /* --- Progress Bar --- */
 .progress-container {
   width: 100%;
-  height: 10px;
+  height: 12px;
   background: rgba(0,0,0,0.05);
   border-radius: 10px;
   margin: 15px 0;
   overflow: hidden;
+  border: 1px solid #ddd;
 }
 
 .progress-bar {
   height: 100%;
   background: linear-gradient(to right, var(--success-green), #81ecec);
-  transition: width 0.8s ease-in-out;
+  transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* --- Floating Hearts --- */
@@ -230,35 +216,36 @@ body {
   100% { transform: translateY(-110vh) scale(1.5); opacity: 0; }
 }
 
-/* --- Standard Cards & Inputs --- */
-.card {
-  background: var(--soft-white);
-  backdrop-filter: blur(20px);
-  border-radius: 35px;
-  padding: 30px;
-  box-shadow: var(--card-shadow);
-  margin-bottom: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+/* --- Buttons --- */
+.primary-btn {
+  background: linear-gradient(45deg, var(--primary-pink), var(--secondary-pink)) !important;
+  color: white !important;
+  border: 1px solid var(--glass-border) !important;
+  padding: 14px !important;
+  font-weight: bold !important;
+  border-radius: 18px !important;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.modern-input {
-  width: 100%;
-  border: 2px solid #f2f2f2;
-  border-radius: 15px;
-  padding: 12px;
-  margin-bottom: 12px;
-  font-family: 'Poppins', sans-serif;
-  box-sizing: border-box;
-  outline: none;
-  transition: 0.3s;
+/* --- Chat System --- */
+.chat-window {
+  height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 25px;
 }
 
-.modern-input:focus {
-  border-color: var(--secondary-pink);
-}
+.msg-me { align-self: flex-end; background: var(--primary-pink); color: white; border-bottom-right-radius: 4px; margin-left: auto;}
+.msg-partner { align-self: flex-start; background: white; color: #444; border-bottom-left-radius: 4px; margin-right: auto;}
 
-/* --- Mobile Responsiveness --- */
+/* --- Mobile --- */
 @media (max-width: 400px) {
   .logo-text { font-size: 3.2rem !important; }
-  .milestone-gallery { grid-template-columns: 1fr; }
+  .countdown-grid { gap: 8px; }
 }
