@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './firebase'; 
 import { ref, push, set, onValue, remove } from "firebase/database";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged, 
+  signOut,
+  sendPasswordResetEmail 
+} from "firebase/auth";
 import './App.css';
 
 function App() {
@@ -12,7 +18,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
 
-  // States
+  // App States
   const [pro, setPro] = useState("");
   const [con, setCon] = useState("");
   const [answer, setAnswer] = useState("");
@@ -81,6 +87,14 @@ function App() {
     } catch (err) { alert(err.message); }
   };
 
+  const handleResetPassword = async () => {
+    if (!email) return alert("Please enter your email address first!");
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset email sent! Check your inbox 📧");
+    } catch (err) { alert(err.message); }
+  };
+
   const handleAddLog = async () => {
     if (!answer) return;
     await push(ref(db, `couples/${coupleCode}/logs`), {
@@ -111,7 +125,6 @@ function App() {
     setCapsuleMessage(""); setUnlockDate("");
   };
 
-  // --- REWRITTEN AUTH SECTION ---
   if (!user) {
     return (
       <div className="container">
@@ -131,18 +144,39 @@ function App() {
             style={{marginTop: '10px'}}
           />
           
-          <div style={{marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px'}}>
-            {/* Primary Action Button */}
-            <button onClick={handleAuth} style={{background: isLogin ? '#e91e63' : '#2ecc71'}}>
+          <div style={{marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
+            <button onClick={handleAuth} style={{background: isLogin ? '#e91e63' : '#2ecc71', fontWeight: 'bold'}}>
               {isLogin ? "Login" : "Register Now"}
             </button>
 
-            {/* Clear Toggle Button */}
+            {isLogin && (
+              <div 
+                onClick={handleResetPassword} 
+                style={{
+                  color: '#ff7eb3', 
+                  fontSize: '0.85rem', 
+                  cursor: 'pointer', 
+                  textAlign: 'center', 
+                  padding: '5px',
+                  textShadow: '0 0 8px rgba(255, 126, 179, 0.4)',
+                  transition: '0.3s'
+                }}
+              >
+                Forgot Password? 🤍
+              </div>
+            )}
+
             <button 
               onClick={() => setIsLogin(!isLogin)} 
-              style={{background: 'rgba(255,255,255,0.1)', border: '1px solid white', fontSize: '0.8rem'}}
+              style={{
+                background: 'rgba(255,255,255,0.1)', 
+                border: '1px solid rgba(255,255,255,0.3)', 
+                fontSize: '0.8rem', 
+                marginTop: '10px',
+                borderRadius: '25px'
+              }}
             >
-              {isLogin ? "New user? Click here to Sign Up" : "Already have an account? Log In"}
+              {isLogin ? "New user? Create Account" : "Back to Login"}
             </button>
           </div>
         </div>
