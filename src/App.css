@@ -1,4 +1,4 @@
-/* --- 1. GOOGLE FONTS & RESET --- */
+/* --- 1. FONTS & ROOT VARIABLES --- */
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap');
 
 :root {
@@ -21,7 +21,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* --- 2. GLOBAL BACKGROUND & ANIMATION --- */
+/* --- 2. GLOBAL THEME & ANIMATIONS --- */
 body {
   margin: 0;
   padding: 0;
@@ -45,10 +45,16 @@ body {
   margin: 0 auto;
   padding: 20px;
   text-align: center;
-  padding-bottom: 100px; /* Space for scrolling */
+  padding-bottom: 100px;
 }
 
-/* --- 3. AUTHENTICATION & LOGIN UI --- */
+/* New: Global Cursive Utility */
+.cursive-text, .cursive-chat, .sticky-note p, .daily-q, .sticky-q, .sticky-a {
+  font-family: 'Dancing Script', cursive !important;
+  font-weight: 700;
+}
+
+/* --- 3. AUTHENTICATION & LOGIN --- */
 .auth-bg {
   display: flex;
   flex-direction: column;
@@ -59,17 +65,12 @@ body {
 .shadow-glass {
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   border-radius: 40px;
   padding: 40px 30px;
 }
 
-.auth-title {
-  color: white;
-  margin-bottom: 25px;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
+.auth-title { color: white; margin-bottom: 25px; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 
 .toggle-auth {
   color: white;
@@ -80,7 +81,7 @@ body {
   transition: 0.3s;
 }
 
-/* --- 4. LOGO & HEADER --- */
+/* --- 4. HEADER & NAVIGATION --- */
 .logo-container {
   display: flex;
   flex-direction: column;
@@ -122,7 +123,19 @@ body {
   text-transform: uppercase;
 }
 
-/* --- 5. PRO COUNTDOWN GRID --- */
+/* --- 5. SETTINGS & DYNAMIC COUNTDOWN --- */
+.settings-card {
+  border: 2px dashed var(--primary-pink);
+  padding: 15px !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+
+.small-btn {
+  padding: 8px !important;
+  font-size: 0.75rem !important;
+  margin-top: 5px;
+}
+
 .countdown-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -138,41 +151,12 @@ body {
   box-shadow: 0 5px 15px rgba(255, 117, 140, 0.1);
 }
 
-.date-pill h4 {
-  margin: 0;
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  color: #aaa;
-  letter-spacing: 0.5px;
-}
+.date-pill h4 { margin: 0; font-size: 0.55rem; text-transform: uppercase; color: #aaa; letter-spacing: 0.5px; }
+.date-pill p { margin: 4px 0 0 0; font-weight: 700; color: var(--primary-pink); font-size: 0.75rem; }
 
-.date-pill p {
-  margin: 4px 0 0 0;
-  font-weight: 700;
-  color: var(--primary-pink);
-  font-size: 0.75rem;
-}
-
-.anniversary-banner {
-  background: linear-gradient(45deg, var(--primary-pink), var(--gold-accent));
-  color: white;
-  padding: 20px;
-  border-radius: 25px;
-  margin-bottom: 25px;
-  box-shadow: 0 10px 20px rgba(255, 117, 140, 0.4);
-  animation: celebrate 2s ease infinite;
-}
-
-@keyframes celebrate {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-}
-
-/* --- 6. MOOD & CHAT SYSTEM --- */
-.mood-chat-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+/* --- 6. LARGE CHAT & MOOD SYSTEM --- */
+.large-chat-container {
+  min-height: 600px;
 }
 
 .mood-header {
@@ -182,18 +166,8 @@ body {
   padding: 10px 0;
 }
 
-.mood-item { flex: 1; }
 .mood-divider { width: 1px; height: 40px; background: #eee; margin: 0 15px; }
 
-.label {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  color: #999;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.emoji-picker { display: flex; justify-content: center; gap: 5px; }
 .emoji-picker button {
   background: transparent;
   border: none;
@@ -210,22 +184,20 @@ body {
   animation: heartBeat 1.5s infinite;
 }
 
-@keyframes heartBeat {
-  0% { transform: scale(1); }
-  14% { transform: scale(1.1); }
-  28% { transform: scale(1); }
-}
+@keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-.chat-window {
-  height: 250px;
+/* Large Window Styles */
+.large-window {
+  height: 450px !important; 
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 15px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.4) !important;
   border-radius: 25px;
   margin-top: 15px;
+  border: 1px solid rgba(255, 117, 140, 0.2);
   scrollbar-width: none;
 }
 
@@ -233,21 +205,32 @@ body {
   max-width: 80%;
   padding: 10px 16px;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: 1.1rem; /* Increased for cursive readability */
   line-height: 1.4;
-  text-align: left;
 }
 
 .msg-me { align-self: flex-end; background: var(--primary-pink); color: white; border-bottom-right-radius: 4px; }
 .msg-partner { align-self: flex-start; background: white; color: #444; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-.typing-bubble { font-size: 0.75rem; color: var(--primary-pink); font-style: italic; text-align: left; margin-left: 10px; }
+/* Chat Photo Feature */
+.chat-img-preview {
+  width: 100%;
+  max-height: 250px;
+  border-radius: 15px;
+  object-fit: cover;
+  margin-bottom: 8px;
+  display: block;
+}
 
-.chat-input-bar { display: flex; gap: 10px; margin-top: 10px; }
-.chat-input-bar input { flex: 1; margin-bottom: 0 !important; }
-.chat-input-bar button { width: 50px !important; border-radius: 50% !important; padding: 0 !important; }
+.chat-input-stack { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.photo-input { 
+  font-size: 0.7rem !important; 
+  padding: 8px !important; 
+  border-style: dashed !important; 
+  background: rgba(255,255,255,0.5) !important; 
+}
 
-/* --- 7. FLOATING REACTIONS --- */
+/* --- 7. FLOATING REACTIONS & POPUPS --- */
 .floating-heart {
   position: fixed;
   bottom: -50px;
@@ -262,7 +245,6 @@ body {
   100% { transform: translateY(-110vh) scale(1.5); opacity: 0; }
 }
 
-/* --- 8. LOVE NOTES & STICKY CARDS --- */
 .sticky-note-card {
   background: var(--sticky-note);
   padding: 40px 20px 20px 20px;
@@ -272,6 +254,7 @@ body {
   margin: 20px 0;
   position: relative;
   border: 1px solid var(--sticky-border);
+  font-size: 1.3rem;
 }
 
 .sticky-note-card::before {
@@ -286,7 +269,7 @@ body {
 .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-/* --- 9. BUCKET LIST & GALLERY --- */
+/* --- 8. PHOTO GALLERY (BUCKET LIST) --- */
 .progress-container {
   width: 100%;
   height: 12px;
@@ -303,138 +286,66 @@ body {
   transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.milestone-gallery {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-top: 20px;
-}
-
+.milestone-gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
 .milestone-card {
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  border: 1px solid #eee;
-  cursor: pointer;
-  transition: 0.3s;
+  background: white; border-radius: 20px; overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #eee; transition: 0.3s;
 }
 
 .milestone-img {
-  width: 100%;
-  height: 110px;
-  object-fit: cover;
-  filter: grayscale(100%);
-  transition: 0.8s ease;
+  width: 100%; height: 110px; object-fit: cover;
+  filter: grayscale(100%); transition: 0.8s ease;
 }
 
 .milestone-card.completed .milestone-img { filter: grayscale(0%); }
-.milestone-card p { padding: 10px; font-size: 0.8rem; font-weight: 600; margin: 0; color: #555; }
 
-/* --- 10. JOURNEY SCRAPBOOK (HISTORY) --- */
-.journey-history {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  margin-top: 40px;
-}
-
-.history-title { color: white; font-family: 'Dancing Script', cursive; font-size: 3rem; }
+/* --- 9. JOURNEY SCRAPBOOK --- */
+.journey-history { display: flex; flex-direction: column; gap: 30px; margin-top: 40px; }
 
 .sticky-note {
-  background: var(--sticky-note);
-  padding: 30px;
-  border-radius: 2px;
-  box-shadow: 8px 12px 25px rgba(0,0,0,0.1);
-  transform: rotate(-1.5deg);
-  border-left: 8px solid var(--sticky-border);
-  position: relative;
-  text-align: left;
+  background: var(--sticky-note); padding: 30px; border-radius: 2px;
+  box-shadow: 8px 12px 25px rgba(0,0,0,0.1); transform: rotate(-1.5deg);
+  border-left: 8px solid var(--sticky-border); position: relative; text-align: left;
 }
 
-.sticky-note:nth-child(even) {
-  transform: rotate(1.5deg);
-  background: var(--blue-note);
-  border-left-color: var(--blue-border);
-}
+.sticky-note:nth-child(even) { transform: rotate(1.5deg); background: var(--blue-note); border-left-color: var(--blue-border); }
+.sticky-note::after { content: "📌"; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 1.8rem; }
 
-.sticky-note::after {
-  content: "📌";
-  position: absolute;
-  top: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.8rem;
-}
+.pro-con-tags { display: flex; gap: 15px; margin-top: 10px; }
+.pro-tag { color: var(--success-green); font-weight: bold; }
+.con-tag { color: #e74c3c; font-weight: bold; }
 
-.sticky-date { font-size: 0.75rem; color: #999; font-weight: 600; display: block; margin-bottom: 10px; }
-.sticky-q { font-family: 'Dancing Script', cursive; font-size: 1.4rem; color: #333; margin: 0 0 10px 0; }
-.sticky-a { font-size: 1rem; color: #444; margin-bottom: 15px; line-height: 1.4; }
-
-.pro-con-tags { display: flex; gap: 15px; }
-.pro-tag { color: var(--success-green); font-weight: bold; font-size: 0.85rem; }
-.con-tag { color: #e74c3c; font-weight: bold; font-size: 0.85rem; }
-
-/* --- 11. VIBES & SPOTIFY --- */
+/* --- 10. SPOTIFY & FOOTER --- */
 .song-container {
-  margin-top: 15px;
-  background: rgba(255, 255, 255, 0.4);
-  padding: 12px;
-  border-radius: 20px;
-  border: 1px solid var(--glass-border);
-  text-align: left;
+  margin-top: 15px; background: rgba(255, 255, 255, 0.4);
+  padding: 12px; border-radius: 20px; border: 1px solid var(--glass-border); text-align: left;
 }
 
-.song-container small { color: var(--primary-pink); font-weight: 600; }
-.link-btn { display: inline-block; margin-top: 10px; color: var(--romantic-purple); font-weight: 600; text-decoration: none; }
-
-/* --- 12. GENERAL UI ELEMENTS --- */
+/* --- 11. GENERAL ELEMENTS --- */
 .card {
-  background: var(--soft-white);
-  backdrop-filter: blur(20px);
-  border-radius: 35px;
-  padding: 30px;
-  box-shadow: var(--card-shadow);
-  margin-bottom: 30px;
-  border: 1px solid var(--glass-border);
+  background: var(--soft-white); backdrop-filter: blur(20px);
+  border-radius: 35px; padding: 30px; box-shadow: var(--card-shadow);
+  margin-bottom: 30px; border: 1px solid var(--glass-border);
 }
 
 .modern-input, .modern-textarea {
-  width: 100%;
-  border: 2px solid #f2f2f2;
-  border-radius: 18px;
-  padding: 15px;
-  margin-bottom: 15px;
-  background: #fdfdfd;
-  font-family: 'Poppins', sans-serif;
-  box-sizing: border-box;
-  outline: none;
-  transition: 0.3s;
+  width: 100%; border: 2px solid #f2f2f2; border-radius: 18px;
+  padding: 15px; margin-bottom: 12px; background: #fdfdfd;
+  font-family: 'Poppins', sans-serif; box-sizing: border-box; outline: none; transition: 0.3s;
 }
 
-.modern-input:focus, .modern-textarea:focus { border-color: var(--secondary-pink); }
+.modern-input:focus { border-color: var(--secondary-pink); }
 
 .primary-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(45deg, var(--primary-pink), var(--secondary-pink));
-  color: white;
-  border: none;
-  border-radius: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.3s;
-  box-shadow: 0 10px 20px rgba(255, 117, 140, 0.2);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  width: 100%; padding: 16px; background: linear-gradient(45deg, var(--primary-pink), var(--secondary-pink));
+  color: white; border: none; border-radius: 18px; font-weight: 600; cursor: pointer;
+  transition: 0.3s; box-shadow: 0 10px 20px rgba(255, 117, 140, 0.2); text-transform: uppercase; letter-spacing: 1px;
 }
 
-.primary-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(255, 117, 140, 0.3); }
+.primary-btn:hover { transform: translateY(-2px); }
 
-/* --- 13. MOBILE RESPONSIVENESS --- */
+/* --- 12. MOBILE --- */
 @media (max-width: 400px) {
-  .logo-text { font-size: 3.2rem !important; }
-  .countdown-grid { gap: 5px; }
-  .date-pill p { font-size: 0.65rem; }
-  .card { padding: 20px; }
+  .logo-text { font-size: 3rem !important; }
+  .large-window { height: 350px !important; }
 }
