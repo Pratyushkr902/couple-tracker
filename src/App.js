@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './firebase'; 
-import { ref, push, set, onValue, remove } from "firebase/database";
+import { ref, push, set, onValue, remove, update } from "firebase/database";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -32,6 +32,10 @@ function App() {
   const [capsuleMessage, setCapsuleMessage] = useState("");
   const [unlockDate, setUnlockDate] = useState("");
   const [capsules, setCapsules] = useState([]);
+  
+  // New States: Milestones
+  const [milestone, setMilestone] = useState("");
+  const [milestones, setMilestones] = useState([]);
 
   const ANNIVERSARY_DATE = "2024-01-01"; 
   const dailyQuestions = [
@@ -54,25 +58,25 @@ function App() {
           const code = snapshot.val();
           setCoupleCode(code);
           if (code) {
-            // Listen for logs
             onValue(ref(db, `couples/${code}/logs`), (s) => {
               const data = s.val();
               setHistory(data ? Object.values(data).reverse() : []);
             });
 
-            // Listen for playlist - FIXED DATA RETRIEVAL
             onValue(ref(db, `couples/${code}/playlist`), (s) => {
               const data = s.val();
               if (data) {
-                // Keep the ID from Firebase to ensure unique mapping
-                const list = Object.keys(data).map(key => ({
-                  id: key,
-                  ...data[key]
-                }));
+                const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
                 setPlaylist(list.reverse());
-              } else {
-                setPlaylist([]);
-              }
+              } else { setPlaylist([]); }
+            });
+
+            onValue(ref(db, `couples/${code}/milestones`), (s) => {
+              const data = s.val();
+              if (data) {
+                const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                setMilestones(list);
+              } else { setMilestones([]); }
             });
 
             onValue(ref(db, `couples/${code}/capsules`), (s) => setCapsules(s.val() ? Object.values(s.val()) : []));
@@ -116,6 +120,20 @@ function App() {
     } catch (err) { alert(err.message); }
   };
 
+  const addMilestone = async () => {
+    if (!milestone) return;
+    await push(ref(db, `couples/${coupleCode}/milestones`), {
+      text: milestone,
+      completed: false,
+      timestamp: Date.now()
+    });
+    setMilestone("");
+  };
+
+  const toggleMilestone = async (id, currentStatus) => {
+    await update(ref(db, `couples/${coupleCode}/milestones/${id}`), { completed: !currentStatus });
+  };
+
   const handleAddLog = async () => {
     if (!answer) return;
     await push(ref(db, `couples/${coupleCode}/logs`), {
@@ -157,11 +175,20 @@ function App() {
           <h1 className="logo-text">Bondify</h1>
         </div>
         <div className="card shadow-glass login-card">
+          <h2 style={{color: 'white', marginBottom: '20px'}}>{isLogin ? "Welcome Back" : "Join the Love"}</h2>
           <input type="email" value={email || ""} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" />
           <input type="password" value={password || ""} onChange={(e) => setPassword(e.target.value)} placeholder="Password" style={{marginTop:'10px'}} />
           
           <div style={{marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
-            <button onClick={handleAuth} style={{background: isLogin ? '#e91e63' : '#2ecc71', fontWeight: 'bold'}}>
+            <button 
+              onClick={handleAuth} 
+              style={{
+                background: isLogin ? 'linear-gradient(45deg, #ff758c, #ff7eb3)' : '#2ecc71', 
+                fontWeight: 'bold',
+                color: 'white',
+                boxShadow: isLogin ? '0 10px 20px rgba(255, 117, 140, 0.3)' : '0 10px 20px rgba(46, 204, 113, 0.3)'
+              }}
+            >
               {isLogin ? "Login" : "Create Our Account ✨"}
             </button>
             {isLogin && (
@@ -169,8 +196,11 @@ function App() {
                 Forgot Password? 🤍
               </div>
             )}
-            <button onClick={() => setIsLogin(!isLogin)} style={{background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', fontSize: '0.8rem', marginTop: '10px', borderRadius: '25px'}}>
-              {isLogin ? "New user? Create Account" : "Back to Login"}
+            <button 
+              onClick={() => setIsLogin(!isLogin)} 
+              style={{background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', fontSize: '0.8rem', marginTop: '10px', borderRadius: '25px', backdropFilter: 'blur(10px)'}}
+            >
+              {isLogin ? "New user? Create Our Account" : "Already have an account? Log In"}
             </button>
           </div>
         </div>
@@ -181,8 +211,12 @@ function App() {
   if (!coupleCode) {
     return (
       <div className="container">
-        <h1>Connect Hearts 🔗</h1>
+        <div className="logo-container">
+          <div className="heart-link"><div className="heart heart-1"></div><div className="heart heart-2"></div></div>
+          <h1 className="logo-text">Bondify</h1>
+        </div>
         <div className="card">
+          <h3>Connect Hearts 🔗</h3>
           <p>Enter your secret shared code:</p>
           <input value={tempCode || ""} placeholder="Secret Code" onChange={(e) => setTempCode(e.target.value)} />
           <button onClick={() => set(ref(db, `users/${user.uid}/coupleCode`), tempCode.toLowerCase().trim())}>Link with Partner</button>
@@ -220,6 +254,33 @@ function App() {
           </div>
           <div className="mood-divider"></div>
           <div className="mood-box"><span>Partner's</span><div className="partner-emoji">{partnerMood}</div></div>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3>Relationship Milestones 🏆</h3>
+        <div className="flex-row">
+          <input value={milestone} onChange={(e) => setMilestone(e.target.value)} placeholder="Next date idea? Trip?" />
+          <button onClick={addMilestone} style={{width: '60px'}}>+</button>
+        </div>
+        <div style={{marginTop: '15px', textAlign: 'left'}}>
+          {milestones.map((m) => (
+            <div key={m.id} onClick={() => toggleMilestone(m.id, m.completed)} style={{
+              padding: '10px', 
+              background: m.completed ? 'rgba(46, 204, 113, 0.1)' : 'white', 
+              borderRadius: '10px', 
+              marginBottom: '5px', 
+              cursor: 'pointer',
+              borderLeft: m.completed ? '4px solid #2ecc71' : '4px solid #ddd',
+              textDecoration: m.completed ? 'line-through' : 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              <span>{m.completed ? "✅" : "⏳"}</span>
+              {m.text}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -266,7 +327,6 @@ function App() {
         </div>
       </div>
 
-      {/* FIXED VIBES SECTION */}
       <div className="card">
         <h3>Our Vibes 🎵</h3>
         <div className="flex-row">
