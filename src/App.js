@@ -33,7 +33,7 @@ function App() {
   const [unlockDate, setUnlockDate] = useState("");
   const [capsules, setCapsules] = useState([]);
   
-  // New States: Milestones
+  // States: Milestones
   const [milestone, setMilestone] = useState("");
   const [milestones, setMilestones] = useState([]);
 
@@ -63,6 +63,7 @@ function App() {
               setHistory(data ? Object.values(data).reverse() : []);
             });
 
+            // Sync Playlist
             onValue(ref(db, `couples/${code}/playlist`), (s) => {
               const data = s.val();
               if (data) {
@@ -71,11 +72,12 @@ function App() {
               } else { setPlaylist([]); }
             });
 
+            // Sync Milestones
             onValue(ref(db, `couples/${code}/milestones`), (s) => {
               const data = s.val();
               if (data) {
                 const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-                setMilestones(list);
+                setMilestones(list.reverse());
               } else { setMilestones([]); }
             });
 
@@ -116,7 +118,7 @@ function App() {
     if (!email) return alert("Please enter your email address first!");
     try {
       await sendPasswordResetEmail(auth, email);
-      alert("Password reset email sent! Check your inbox 📧");
+      alert("Password reset email sent! 📧");
     } catch (err) { alert(err.message); }
   };
 
@@ -132,6 +134,10 @@ function App() {
 
   const toggleMilestone = async (id, currentStatus) => {
     await update(ref(db, `couples/${coupleCode}/milestones/${id}`), { completed: !currentStatus });
+  };
+
+  const deleteMilestone = async (id) => {
+    await remove(ref(db, `couples/${coupleCode}/milestones/${id}`));
   };
 
   const handleAddLog = async () => {
@@ -200,7 +206,7 @@ function App() {
               onClick={() => setIsLogin(!isLogin)} 
               style={{background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', fontSize: '0.8rem', marginTop: '10px', borderRadius: '25px', backdropFilter: 'blur(10px)'}}
             >
-              {isLogin ? "New user? Create Our Account" : "Already have an account? Log In"}
+              {isLogin ? "New user? Create Our Account" : "Back to Login"}
             </button>
           </div>
         </div>
@@ -265,20 +271,21 @@ function App() {
         </div>
         <div style={{marginTop: '15px', textAlign: 'left'}}>
           {milestones.map((m) => (
-            <div key={m.id} onClick={() => toggleMilestone(m.id, m.completed)} style={{
+            <div key={m.id} style={{
               padding: '10px', 
               background: m.completed ? 'rgba(46, 204, 113, 0.1)' : 'white', 
               borderRadius: '10px', 
-              marginBottom: '5px', 
-              cursor: 'pointer',
+              marginBottom: '8px', 
               borderLeft: m.completed ? '4px solid #2ecc71' : '4px solid #ddd',
-              textDecoration: m.completed ? 'line-through' : 'none',
               display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
+              justifyContent: 'space-between',
+              alignItems: 'center'
             }}>
-              <span>{m.completed ? "✅" : "⏳"}</span>
-              {m.text}
+              <div onClick={() => toggleMilestone(m.id, m.completed)} style={{cursor: 'pointer', flexGrow: 1, textDecoration: m.completed ? 'line-through' : 'none'}}>
+                <span>{m.completed ? "✅ " : "⏳ "}</span>
+                {m.text}
+              </div>
+              <button onClick={() => deleteMilestone(m.id)} style={{width: 'auto', background: 'transparent', color: '#ff758c', padding: '0 5px', boxShadow: 'none'}}>✕</button>
             </div>
           ))}
         </div>
@@ -350,7 +357,7 @@ function App() {
             <div key={s.id} className="song-item" style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '8px', padding: '10px', background: 'rgba(255,255,255,0.4)', borderRadius: '12px'}}>
               <div style={{textAlign: 'left'}}>
                 <small style={{fontSize: '0.7rem', color: '#777'}}>{s.user}'s Pick:</small>
-                <div style={{fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary-pink)'}}>Song Entry</div>
+                <div style={{fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary-pink)'}}>Shared Vibe</div>
               </div>
               <a href={s.link} target="_blank" rel="noreferrer" style={{
                 textDecoration:'none', 
