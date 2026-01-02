@@ -58,42 +58,6 @@ body {
   text-shadow: 0 10px 20px rgba(255, 117, 140, 0.4), 0 0 40px rgba(255, 255, 255, 0.3);
 }
 
-.heart-link {
-  display: flex;
-  position: relative;
-  height: 45px;
-  width: 75px;
-  margin-bottom: 15px;
-}
-
-.heart {
-  position: absolute;
-  width: 32px;
-  height: 32px;
-  background-color: white;
-  transform: rotate(-45deg);
-  box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
-}
-
-.heart::before, .heart::after {
-  content: "";
-  position: absolute;
-  width: 32px;
-  height: 32px;
-  background-color: white;
-  border-radius: 50%;
-}
-.heart::before { top: -16px; left: 0; }
-.heart::after { left: 16px; top: 0; }
-
-.heart-1 { left: 5px; animation: pulse 2s infinite; z-index: 2; }
-.heart-2 { right: 5px; background-color: #ffdce3; animation: pulse 2s infinite reverse; z-index: 1; }
-
-@keyframes pulse {
-  0%, 100% { transform: rotate(-45deg) scale(1); }
-  50% { transform: rotate(-45deg) scale(1.15); }
-}
-
 /* --- Anniversary & Stats --- */
 .anniversary-banner {
   background: linear-gradient(45deg, var(--primary-pink), var(--gold-accent));
@@ -110,250 +74,191 @@ body {
   50% { transform: scale(1.03); }
 }
 
-.stats-badge {
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-pill {
   background: white;
-  padding: 10px 25px;
+  padding: 8px 18px;
   border-radius: 50px;
   color: var(--primary-pink);
   font-weight: 700;
-  font-size: 0.9rem;
-  display: inline-block;
-  margin-bottom: 25px;
+  font-size: 0.8rem;
   box-shadow: var(--card-shadow);
 }
 
-/* --- User Bar --- */
-.user-bar {
+/* --- Authentication (Login/Signup) --- */
+.auth-bg {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.15);
-  padding: 10px 20px;
-  border-radius: 50px;
-  margin-bottom: 20px;
-  color: white;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-direction: column;
+  justify-content: center;
+  min-height: 90vh;
 }
 
-.logout-btn {
-  background: rgba(255, 255, 255, 0.2) !important;
+.primary-btn {
+  background: linear-gradient(45deg, var(--primary-pink), var(--secondary-pink)) !important;
   color: white !important;
-  padding: 5px 15px !important;
-  font-size: 0.75rem !important;
-  width: auto !important;
-  box-shadow: none !important;
+  border: none !important;
+  padding: 14px !important;
+  font-weight: bold !important;
+  border-radius: 18px !important;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-/* --- Chat System --- */
-.typing-indicator {
-  font-size: 0.8rem;
-  color: var(--primary-pink);
-  font-style: italic;
-  margin-bottom: 8px;
+.toggle-auth {
+  color: white;
+  margin-top: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* --- Bucket List Gallery --- */
+.milestone-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.milestone-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.milestone-card:hover {
+  transform: scale(1.03);
+}
+
+.milestone-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  filter: grayscale(100%); /* B&W for uncompleted */
+  transition: 0.8s ease;
+}
+
+.milestone-card.completed .milestone-img {
+  filter: grayscale(0%); /* Full color for completed */
+}
+
+.milestone-card p {
+  padding: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+  color: #555;
+}
+
+/* --- Spotify Player & Vibes --- */
+.song-container {
+  margin-top: 15px;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
   text-align: left;
 }
 
+.song-container small {
+  display: block;
+  color: var(--primary-pink);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* --- Chat & Mood Grid --- */
 .chat-window {
-  height: 220px;
+  height: 250px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 15px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 20px;
-  margin-bottom: 15px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  scrollbar-width: none;
 }
 
 .msg-bubble {
-  max-width: 80%;
+  max-width: 75%;
   padding: 10px 16px;
   border-radius: 20px;
   font-size: 0.9rem;
-  text-align: left;
 }
 
-.msg-me {
-  align-self: flex-end;
-  background: linear-gradient(135deg, var(--primary-pink), var(--secondary-pink));
-  color: white;
-  border-bottom-right-radius: 4px;
-}
+.msg-me { align-self: flex-end; background: var(--primary-pink); color: white; border-bottom-right-radius: 4px; margin-left: auto;}
+.msg-partner { align-self: flex-start; background: white; color: #444; border-bottom-left-radius: 4px; margin-right: auto;}
 
-.msg-partner {
-  align-self: flex-start;
-  background: white;
-  color: #444;
-  border-bottom-left-radius: 4px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
-
-.chat-input-area {
-  display: flex;
-  gap: 10px;
-}
-
-.chat-input-area button {
-  width: 50px !important;
-  padding: 0 !important;
-  border-radius: 50% !important;
-}
-
-/* --- Sticky Note (Love Notes) --- */
-.note-card-display {
-  background: var(--sticky-note) !important;
-  border: 2px solid var(--sticky-border) !important;
-  color: #862e10 !important;
-  transform: rotate(-1.5deg);
-  font-family: 'Dancing Script', cursive;
-  font-size: 1.5rem;
-  padding-top: 35px !important;
-  position: relative;
-}
-
-.note-card-display::before {
-  content: "📌";
-  position: absolute;
-  top: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.2rem;
-}
-
-.clear-btn {
-  background: rgba(134, 46, 16, 0.1) !important;
-  color: #862e10 !important;
-  font-size: 0.8rem !important;
-  padding: 5px !important;
-  margin-top: 10px !important;
-}
-
-/* --- Milestone Progress Bar --- */
-.progress-bar-container {
+/* --- Progress Bar --- */
+.progress-container {
   width: 100%;
-  height: 12px;
+  height: 10px;
   background: rgba(0,0,0,0.05);
-  border-radius: 20px;
-  margin-bottom: 20px;
+  border-radius: 10px;
+  margin: 15px 0;
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
   background: linear-gradient(to right, var(--success-green), #81ecec);
-  transition: width 0.7s ease-in-out;
+  transition: width 0.8s ease-in-out;
 }
 
-.milestone-item {
-  display: flex;
-  align-items: center;
-  padding: 14px;
-  background: white;
-  border-radius: 18px;
-  margin-bottom: 10px;
-  cursor: pointer;
+/* --- Floating Hearts --- */
+.floating-heart {
+  position: fixed;
+  bottom: -50px;
+  font-size: 2.5rem;
+  z-index: 1000;
+  pointer-events: none;
+  animation: floatUp 3s ease-out forwards;
 }
 
-.milestone-item.is-done {
-  opacity: 0.6;
-  text-decoration: line-through;
-  border-left: 6px solid var(--success-green);
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-110vh) scale(1.5); opacity: 0; }
 }
 
-/* --- Card Styling --- */
+/* --- Standard Cards & Inputs --- */
 .card {
   background: var(--soft-white);
   backdrop-filter: blur(20px);
   border-radius: 35px;
-  padding: 35px;
+  padding: 30px;
   box-shadow: var(--card-shadow);
   margin-bottom: 30px;
   border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
-.mood-display {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.active-mood {
-  transform: scale(1.3);
-  filter: drop-shadow(0 0 8px var(--primary-pink));
-}
-
-.partner-emoji {
-  font-size: 3rem;
-  animation: heartBeat 1.5s infinite;
-}
-
-@keyframes heartBeat {
-  0% { transform: scale(1); }
-  14% { transform: scale(1.15); }
-  28% { transform: scale(1); }
-}
-
-/* --- Journey History --- */
-.history-card {
-  background: white;
-  padding: 25px;
-  border-radius: 30px;
-  margin-bottom: 20px;
-  border-left: 10px solid var(--primary-pink);
-  text-align: left;
-}
-
-.h-card-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: #ccc;
-  margin-bottom: 10px;
-}
-
-.pro-con-tags {
-  display: flex;
-  gap: 15px;
-  margin-top: 10px;
-}
-
-.pro-tag { color: var(--success-green); font-weight: bold; }
-.con-tag { color: #e74c3c; font-weight: bold; }
-
-/* --- Forms & Buttons --- */
-textarea, input {
+.modern-input {
   width: 100%;
   border: 2px solid #f2f2f2;
-  border-radius: 18px;
-  padding: 15px;
-  margin-bottom: 15px;
-  background: #fdfdfd;
+  border-radius: 15px;
+  padding: 12px;
+  margin-bottom: 12px;
   font-family: 'Poppins', sans-serif;
   box-sizing: border-box;
+  outline: none;
+  transition: 0.3s;
 }
 
-button {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(45deg, var(--primary-pink), var(--romantic-purple));
-  color: white;
-  border: none;
-  border-radius: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.4s;
-  box-shadow: 0 10px 20px rgba(255, 117, 140, 0.2);
+.modern-input:focus {
+  border-color: var(--secondary-pink);
 }
 
-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(255, 117, 140, 0.3);
-}
-
-/* --- Mobile --- */
+/* --- Mobile Responsiveness --- */
 @media (max-width: 400px) {
-  .logo-text { font-size: 3rem !important; }
-  .card { padding: 20px; }
+  .logo-text { font-size: 3.2rem !important; }
+  .milestone-gallery { grid-template-columns: 1fr; }
 }
