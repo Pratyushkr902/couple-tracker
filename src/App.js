@@ -43,18 +43,18 @@ function App() {
   const [milestone, setMilestone] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [chatMsg, setChatMsg] = useState("");
-  const [chatImage, setChatImage] = useState(""); // New: Chat Photo Feature
+  const [chatImage, setChatImage] = useState(""); 
 
   const [myMood, setMyMood] = useState("🤍");
   const [partnerMood, setPartnerMood] = useState("🤍");
   const [isPartnerTyping, setIsPartnerTyping] = useState(false);
   const [hearts, setHearts] = useState([]); 
 
-  // --- New: Dynamic Date Settings ---
   const [anniversaryDate, setAnniversaryDate] = useState("2024-01-01");
   const [birthdayDate, setBirthdayDate] = useState("2024-06-15");
 
   const chatEndRef = useRef(null);
+  const cameraInputRef = useRef(null); // Ref for Camera
 
   const getCountdown = (targetDate) => {
     const today = new Date();
@@ -88,7 +88,6 @@ function App() {
           const code = snapshot.val();
           setCoupleCode(code);
           if (code) {
-            // Load dates from Firebase if user has set them
             onValue(ref(db, `couples/${code}/settings`), (s) => {
               const data = s.val();
               if (data) {
@@ -96,7 +95,6 @@ function App() {
                 if (data.birthday) setBirthdayDate(data.birthday);
               }
             });
-
             onValue(ref(db, `couples/${code}/logs`), (s) => setHistory(s.val() ? Object.values(s.val()).reverse() : []));
             onValue(ref(db, `couples/${code}/playlist`), (s) => setPlaylist(s.val() ? Object.keys(s.val()).map(k => ({ id: k, ...s.val()[k] })).reverse() : []));
             onValue(ref(db, `couples/${code}/milestones`), (s) => setMilestones(s.val() ? Object.keys(s.val()).map(k => ({ id: k, ...s.val()[k] })).reverse() : []));
@@ -153,7 +151,7 @@ function App() {
     set(ref(db, `couples/${coupleCode}/typing/${user.uid}`), false);
     await push(ref(db, `couples/${coupleCode}/chats`), {
       text: chatMsg,
-      image: chatImage, // Photo in chat
+      image: chatImage,
       sender: user.uid,
       timestamp: serverTimestamp()
     });
@@ -161,11 +159,18 @@ function App() {
     setChatImage("");
   };
 
+  // CAMERA HANDLER: Convert to Base64 (Simplest for this build)
+  const handleCameraCapture = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setChatImage(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const updateDates = () => {
-    update(ref(db, `couples/${coupleCode}/settings`), {
-      anniversary: anniversaryDate,
-      birthday: birthdayDate
-    });
+    update(ref(db, `couples/${coupleCode}/settings`), { anniversary: anniversaryDate, birthday: birthdayDate });
     alert("Countdown updated! ❤️");
   };
 
@@ -186,9 +191,7 @@ function App() {
           <input className="modern-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" />
           <input className="modern-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
           <button className="primary-btn" onClick={handleAuth}>{isLogin ? "Login" : "Create Our Account ✨"}</button>
-          <p className="toggle-auth" onClick={() => setIsLogin(!isLogin)}>
-            {isLogin ? "New user? Create Our Account" : "Back to Login"}
-          </p>
+          <p className="toggle-auth" onClick={() => setIsLogin(!isLogin)}>{isLogin ? "New user? Create Our Account" : "Back to Login"}</p>
         </div>
       </div>
     );
@@ -216,53 +219,26 @@ function App() {
         <button className="minimal-logout" onClick={() => signOut(auth)}>Logout</button>
       </div>
 
-      {/* Settings: User sets their Anniversary/Birthday */}
       <div className="card settings-card">
         <h4 className="cursive-text">Set Your Special Dates 📅</h4>
         <div className="flex-row">
-          <div style={{flex:1}}>
-            <small>Anniversary</small>
-            <input type="date" className="modern-input" value={anniversaryDate} onChange={(e)=>setAnniversaryDate(e.target.value)}/>
-          </div>
-          <div style={{flex:1}}>
-            <small>Partner Birthday</small>
-            <input type="date" className="modern-input" value={birthdayDate} onChange={(e)=>setBirthdayDate(e.target.value)}/>
-          </div>
+          <div style={{flex:1}}><small>Anniversary</small><input type="date" className="modern-input" value={anniversaryDate} onChange={(e)=>setAnniversaryDate(e.target.value)}/></div>
+          <div style={{flex:1}}><small>Partner Birthday</small><input type="date" className="modern-input" value={birthdayDate} onChange={(e)=>setBirthdayDate(e.target.value)}/></div>
         </div>
         <button className="primary-btn small-btn" onClick={updateDates}>Set Countdown</button>
       </div>
 
       <div className="countdown-grid">
-        <div className="date-pill">
-          <h4>Days of Us</h4>
-          <p>{getDaysOfUs()} Days ✨</p>
-        </div>
-        <div className="date-pill">
-          <h4>Anniversary</h4>
-          <p>{getCountdown(anniversaryDate)} 🥂</p>
-        </div>
-        <div className="date-pill">
-          <h4>Partner B-Day</h4>
-          <p>{getCountdown(birthdayDate)} 🎂</p>
-        </div>
+        <div className="date-pill"><h4>Days of Us</h4><p>{getDaysOfUs()} Days ✨</p></div>
+        <div className="date-pill"><h4>Anniversary</h4><p>{getCountdown(anniversaryDate)} 🥂</p></div>
+        <div className="date-pill"><h4>Partner B-Day</h4><p>{getCountdown(birthdayDate)} 🎂</p></div>
       </div>
 
-      {/* Large Chat Box & Mood Section */}
       <div className="card mood-chat-grid large-chat-container">
         <div className="mood-header">
-           <div className="mood-item">
-             <p className="label">My Mood</p>
-             <div className="emoji-picker">
-              {["❤️", "💖", "😴", "😊", "🔥"].map(e => (
-                <button key={e} onClick={() => set(ref(db, `couples/${coupleCode}/moods/${user.uid}`), e)} className={myMood === e ? "active-mood" : ""}>{e}</button>
-              ))}
-            </div>
-           </div>
+           <div className="mood-item"><p className="label">My Mood</p><div className="emoji-picker">{["❤️", "💖", "😴", "😊", "🔥"].map(e => (<button key={e} onClick={() => set(ref(db, `couples/${coupleCode}/moods/${user.uid}`), e)} className={myMood === e ? "active-mood" : ""}>{e}</button>))}</div></div>
            <div className="mood-divider"></div>
-           <div className="mood-item">
-             <p className="label">Partner</p>
-             <div className="partner-emoji-display" onClick={() => set(ref(db, `couples/${coupleCode}/reactions`), Date.now())}>{partnerMood}</div>
-           </div>
+           <div className="mood-item"><p className="label">Partner</p><div className="partner-emoji-display" onClick={() => set(ref(db, `couples/${coupleCode}/reactions`), Date.now())}>{partnerMood}</div></div>
         </div>
 
         <div className="chat-area">
@@ -276,12 +252,31 @@ function App() {
             {isPartnerTyping && <div className="typing-bubble">...</div>}
             <div ref={chatEndRef} />
           </div>
+          
           <form className="chat-input-bar" onSubmit={sendChatMessage}>
             <div className="chat-input-stack">
-               <input value={chatImage} onChange={(e) => setChatImage(e.target.value)} placeholder="Paste Photo URL..." className="photo-input" />
-               <div className="flex-row">
-                 <input value={chatMsg} onChange={(e) => handleTyping(e.target.value)} placeholder="Type a romantic message..." />
-                 <button type="submit">🕊️</button>
+               {/* Hidden Camera Input */}
+               <input 
+                 type="file" 
+                 accept="image/*" 
+                 capture="environment" 
+                 ref={cameraInputRef} 
+                 style={{display:'none'}} 
+                 onChange={handleCameraCapture} 
+               />
+               
+               {/* Large Typing Area for Android */}
+               <textarea 
+                 className="modern-textarea chat-textarea cursive-text" 
+                 value={chatMsg} 
+                 onChange={(e) => handleTyping(e.target.value)} 
+                 placeholder="Type a romantic message..."
+               />
+               
+               <div className="chat-actions-row">
+                 <button type="button" className="camera-trigger" onClick={() => cameraInputRef.current.click()}>📸</button>
+                 <input className="photo-url-input" value={chatImage} onChange={(e) => setChatImage(e.target.value)} placeholder="Or paste Photo URL..." />
+                 <button type="submit" className="send-btn">🕊️</button>
                </div>
             </div>
           </form>
@@ -291,12 +286,7 @@ function App() {
       <div className="card">
         <h3 className="cursive-text">Send Love Note 💌</h3>
         <input className="modern-input cursive-text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Write something sweet..." />
-        <button className="primary-btn" onClick={() => { 
-            if(!note) return; 
-            set(ref(db, `couples/${coupleCode}/notes/${user.uid}`), note); 
-            setNote(""); 
-            alert("Love Note Sent!"); 
-          }}>Post Note</button>
+        <button className="primary-btn" onClick={() => { if(!note) return; set(ref(db, `couples/${coupleCode}/notes/${user.uid}`), note); setNote(""); alert("Love Note Sent!"); }}>Post Note</button>
       </div>
 
       {displayNote && (
@@ -308,16 +298,10 @@ function App() {
 
       <div className="card bucket-list">
         <h3>Bucket List 📸</h3>
-        <div className="progress-container">
-            <div className="progress-bar" style={{width: `${(milestones.filter(m => m.completed).length / (milestones.length || 1)) * 100}%`}}></div>
-        </div>
+        <div className="progress-container"><div className="progress-bar" style={{width: `${(milestones.filter(m => m.completed).length / (milestones.length || 1)) * 100}%`}}></div></div>
         <input className="modern-input" value={milestone} onChange={(e) => setMilestone(e.target.value)} placeholder="Dream date name..." />
         <input className="modern-input" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="Photo URL (Optional)" />
-        <button className="primary-btn" onClick={() => { 
-            if(!milestone) return; 
-            push(ref(db, `couples/${coupleCode}/milestones`), { text: milestone, completed: false, photo: photoUrl }); 
-            setMilestone(""); setPhotoUrl(""); 
-          }}>Add to List</button>
+        <button className="primary-btn" onClick={() => { if(!milestone) return; push(ref(db, `couples/${coupleCode}/milestones`), { text: milestone, completed: false, photo: photoUrl }); setMilestone(""); setPhotoUrl(""); }}>Add to List</button>
         <div className="milestone-gallery">
           {milestones.map(m => (
             <div key={m.id} className={`milestone-card ${m.completed ? 'completed' : ''}`} onClick={() => update(ref(db, `couples/${coupleCode}/milestones/${m.id}`), { completed: !m.completed })}>
@@ -329,36 +313,23 @@ function App() {
       </div>
 
       <div className="card journey-input">
-        <p className="daily-q">"{currentQuestion}"</p>
+        <p className="daily-q cursive-text">"{currentQuestion}"</p>
         <textarea className="modern-textarea" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Your thoughts today..." />
         <div className="flex-row">
             <input className="modern-input" value={pro} onChange={(e) => setPro(e.target.value)} placeholder="High (+)" />
             <input className="modern-input" value={con} onChange={(e) => setCon(e.target.value)} placeholder="Low (-)" />
         </div>
-        <button className="primary-btn" onClick={() => { 
-            if(!answer) return; 
-            push(ref(db, `couples/${coupleCode}/logs`), { 
-              user: user.email.split('@')[0], 
-              date: new Date().toLocaleDateString(), 
-              question: currentQuestion, 
-              answer, pro, con, 
-              timestamp: serverTimestamp() 
-            }); 
-            setAnswer(""); setPro(""); setCon(""); 
-          }}>Save Memory</button>
+        <button className="primary-btn" onClick={() => { if(!answer) return; push(ref(db, `couples/${coupleCode}/logs`), { user: user.email.split('@')[0], date: new Date().toLocaleDateString(), question: currentQuestion, answer, pro, con, timestamp: serverTimestamp() }); setAnswer(""); setPro(""); setCon(""); }}>Save Memory</button>
       </div>
 
       <div className="journey-history">
-        <h2 className="history-title">Our Journey 📖</h2>
+        <h2 className="history-title cursive-text">Our Journey 📖</h2>
         {history.map((item, i) => (
           <div key={i} className="sticky-note">
             <span className="sticky-date">{item.date} by {item.user}</span>
             <p className="sticky-q cursive-text">"{item.question}"</p>
             <p className="sticky-a cursive-text">{item.answer}</p>
-            <div className="pro-con-tags">
-                <span className="pro-tag">❤ {item.pro}</span>
-                <span className="con-tag">☁ {item.con}</span>
-            </div>
+            <div className="pro-con-tags"><span className="pro-tag">❤ {item.pro}</span><span className="con-tag">☁ {item.con}</span></div>
           </div>
         ))}
       </div>
@@ -366,11 +337,7 @@ function App() {
       <div className="card vibe-card">
         <h3>Our Vibes 🎵</h3>
         <input className="modern-input" value={songLink} onChange={(e) => setSongLink(e.target.value)} placeholder="Spotify Track Link" />
-        <button className="primary-btn" onClick={() => { 
-            if(!songLink) return; 
-            push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink.trim(), user: user.email.split('@')[0] }); 
-            setSongLink(""); 
-          }}>Share Music</button>
+        <button className="primary-btn" onClick={() => { if(!songLink) return; push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink.trim(), user: user.email.split('@')[0] }); setSongLink(""); }}>Share Music</button>
         <div className="playlist-list">
           {playlist.map((s) => {
             const isSpotify = s.link.includes("spotify.com");
