@@ -1,4 +1,4 @@
-/* --- 1. FONTS & ROOT VARIABLES --- */
+
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap');
 
 :root {
@@ -21,7 +21,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* --- 2. GLOBAL THEME & ANIMATIONS --- */
+
 body {
   margin: 0;
   padding: 0;
@@ -48,13 +48,13 @@ body {
   padding-bottom: 100px;
 }
 
-/* New: Global Cursive Utility */
+
 .cursive-text, .cursive-chat, .sticky-note p, .daily-q, .sticky-q, .sticky-a {
   font-family: 'Dancing Script', cursive !important;
   font-weight: 700;
 }
 
-/* --- 3. AUTHENTICATION & LOGIN --- */
+
 .auth-bg {
   display: flex;
   flex-direction: column;
@@ -81,7 +81,7 @@ body {
   transition: 0.3s;
 }
 
-/* --- 4. HEADER & NAVIGATION --- */
+
 .logo-container {
   display: flex;
   flex-direction: column;
@@ -123,7 +123,7 @@ body {
   text-transform: uppercase;
 }
 
-/* --- 5. SETTINGS & DYNAMIC COUNTDOWN --- */
+
 .settings-card {
   border: 2px dashed var(--primary-pink);
   padding: 15px !important;
@@ -154,7 +154,7 @@ body {
 .date-pill h4 { margin: 0; font-size: 0.55rem; text-transform: uppercase; color: #aaa; letter-spacing: 0.5px; }
 .date-pill p { margin: 4px 0 0 0; font-weight: 700; color: var(--primary-pink); font-size: 0.75rem; }
 
-/* --- 6. LARGE CHAT & MOOD SYSTEM --- */
+
 .large-chat-container {
   min-height: 600px;
 }
@@ -186,7 +186,7 @@ body {
 
 @keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-/* Large Window Styles */
+
 .large-window {
   height: 450px !important; 
   overflow-y: auto;
@@ -205,14 +205,14 @@ body {
   max-width: 80%;
   padding: 10px 16px;
   border-radius: 20px;
-  font-size: 1.1rem; /* Increased for cursive readability */
+  font-size: 1.1rem; 
   line-height: 1.4;
 }
 
 .msg-me { align-self: flex-end; background: var(--primary-pink); color: white; border-bottom-right-radius: 4px; }
 .msg-partner { align-self: flex-start; background: white; color: #444; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-/* Chat Photo Feature */
+
 .chat-img-preview {
   width: 100%;
   max-height: 250px;
@@ -230,7 +230,7 @@ body {
   background: rgba(255,255,255,0.5) !important; 
 }
 
-/* --- 7. FLOATING REACTIONS & POPUPS --- */
+
 .floating-heart {
   position: fixed;
   bottom: -50px;
@@ -269,7 +269,7 @@ body {
 .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-/* --- 8. PHOTO GALLERY (BUCKET LIST) --- */
+
 .progress-container {
   width: 100%;
   height: 12px;
@@ -299,7 +299,7 @@ body {
 
 .milestone-card.completed .milestone-img { filter: grayscale(0%); }
 
-/* --- 9. JOURNEY SCRAPBOOK --- */
+
 .journey-history { display: flex; flex-direction: column; gap: 30px; margin-top: 40px; }
 
 .sticky-note {
@@ -315,13 +315,13 @@ body {
 .pro-tag { color: var(--success-green); font-weight: bold; }
 .con-tag { color: #e74c3c; font-weight: bold; }
 
-/* --- 10. SPOTIFY & FOOTER --- */
+
 .song-container {
   margin-top: 15px; background: rgba(255, 255, 255, 0.4);
   padding: 12px; border-radius: 20px; border: 1px solid var(--glass-border); text-align: left;
 }
 
-/* --- 11. GENERAL ELEMENTS --- */
+
 .card {
   background: var(--soft-white); backdrop-filter: blur(20px);
   border-radius: 35px; padding: 30px; box-shadow: var(--card-shadow);
@@ -344,12 +344,12 @@ body {
 
 .primary-btn:hover { transform: translateY(-2px); }
 
-/* --- 12. MOBILE --- */
+
 @media (max-width: 400px) {
   .logo-text { font-size: 3rem !important; }
   .large-window { height: 350px !important; }
 }
-/* --- MUSIC PLAYER STYLES --- */
+
 .player-card {
   background: rgba(255, 255, 255, 0.5);
   border-radius: 20px;
@@ -367,7 +367,7 @@ body {
 }
 
 .player-header small {
-  color: #ff758c; /* Primary Pink */
+  color: #ff758c; 
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.65rem;
@@ -378,4 +378,37 @@ body {
   text-decoration: none;
   font-weight: bold;
   font-size: 0.9rem;
+}
+
+.user-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.delete-btn-minimal {
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid #ff4757;
+  color: #ff4757;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-btn-minimal:hover {
+  background: #ff4757;
+  color: white;
+  transform: scale(1.05);
+}
+
+.logout-btn-minimal {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid white;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.7rem;
+  cursor: pointer;
 }

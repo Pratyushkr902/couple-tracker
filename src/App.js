@@ -4,12 +4,11 @@ import {
   ref, push, set, onValue, remove, update, limitToLast, query, serverTimestamp 
 } from "firebase/database";
 import { 
-  createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut 
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser
 } from "firebase/auth";
 import './App.css';
 
 function App() {
-  // --- 1. CORE STATES ---
   const [user, setUser] = useState(null);
   const [coupleCode, setCoupleCode] = useState("");
   const [tempCode, setTempCode] = useState("");
@@ -17,15 +16,13 @@ function App() {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
 
-  // --- 2. DATA LISTS ---
   const [history, setHistory] = useState([]);
   const [playlist, setPlaylist] = useState([]);
   const [milestones, setMilestones] = useState([]);
   const [messages, setMessages] = useState([]);
   const [shayaris, setShayaris] = useState([]); 
   const [game, setGame] = useState({ type: '', task: '', sender: '' });
-  
-  // --- 3. INPUT STATES ---
+
   const [answer, setAnswer] = useState("");
   const [songLink, setSongLink] = useState("");
   const [shayariText, setShayariText] = useState("");
@@ -36,7 +33,6 @@ function App() {
   const [chatMsg, setChatMsg] = useState("");
   const [chatImage, setChatImage] = useState(""); 
 
-  // --- 4. UI & LOGIC STATES ---
   const [myMood, setMyMood] = useState("🤍");
   const [partnerMood, setPartnerMood] = useState("🤍");
   const [nudgeShake, setNudgeShake] = useState(false); 
@@ -46,17 +42,41 @@ function App() {
   const chatEndRef = useRef(null);
   const cameraInputRef = useRef(null);
 
-  // --- FIX: MEDIA EMBED LOGIC ---
+  
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      "⚠ WARNING: Are you sure? This will delete your account and your personal records forever. This action cannot be undone!"
+    );
+    
+    if (!confirmDelete) return;
+
+    try {
+      const currentUser = auth.currentUser;
+      const userUID = currentUser.uid;
+
+     
+      await remove(ref(db, `users/${userUID}`));
+      
+      
+      await deleteUser(currentUser);
+
+      alert("Account deleted successfully.");
+    } catch (error) {
+      console.error("Delete Error:", error);
+      if (error.code === 'auth/requires-recent-login') {
+        alert("Security Requirement: Please Logout and Login again, then try deleting your account immediately.");
+      } else {
+        alert("Error: " + error.message);
+      }
+    }
+  };
+
   const getMediaEmbed = (url) => {
     if (!url) return { type: 'link', url: '' };
-    
-    // Spotify Detection
     if (url.includes('spotify.com')) {
       const id = url.split('track/')[1]?.split('?')[0];
       return { type: 'spotify', url: `https://open.spotify.com/embed/track/${id}?utm_source=generator` };
     }
-    
-    // YouTube Detection (Normal & Shorts)
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
       let id = "";
       if (url.includes('v=')) id = url.split('v=')[1]?.split('&')[0];
@@ -64,11 +84,9 @@ function App() {
       else id = url.split('.be/')[1]?.split('?')[0];
       return { type: 'youtube', url: `https://www.youtube.com/embed/${id}` };
     }
-    
     return { type: 'link', url: url };
   };
 
-  // --- 5. AUTOMATIC LOGIC ---
   const getCountdown = (targetDate) => {
     const today = new Date();
     const target = new Date(today.getFullYear(), new Date(targetDate).getMonth(), new Date(targetDate).getDate());
@@ -93,7 +111,6 @@ function App() {
   const dayIndex = Math.floor(new Date().getTime() / (1000 * 60 * 60 * 24));
   const currentQuestion = dailyQuestions[dayIndex % dailyQuestions.length];
 
-  // --- 6. FIREBASE SYNC ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -142,7 +159,6 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- 7. ACTION HANDLERS ---
   const triggerNudge = () => {
     onValue(ref(db, `couples/${coupleCode}/moods`), (s) => {
       const pId = Object.keys(s.val()).find(id => id !== user.uid);
@@ -184,7 +200,13 @@ function App() {
 
   return (
     <div className={`container ${nudgeShake ? 'nudge-shake' : ''}`}>
-      <div className="user-bar"><span>🔒 {coupleCode}</span><button onClick={() => signOut(auth)}>Logout</button></div>
+      <div className="user-bar">
+        <span>🔒 {coupleCode}</span>
+        <div className="user-actions">
+          <button className="delete-btn-minimal" onClick={handleDeleteAccount}>Delete Account</button>
+          <button className="logout-btn-minimal" onClick={() => signOut(auth)}>Logout</button>
+        </div>
+      </div>
 
       <div className="countdown-grid">
         <div className="date-pill"><h4>Together</h4><p>{getDaysOfUs()} ✨</p></div>
@@ -264,7 +286,6 @@ function App() {
         </div>
       </div>
 
-      {/* Journey History */}
       <div className="card journey-input">
         <p className="daily-q cursive-text">"{currentQuestion}"</p>
         <textarea className="modern-textarea" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Memory..." />
