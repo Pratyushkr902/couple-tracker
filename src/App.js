@@ -17,7 +17,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
 
-  // --- 2. DATA LISTS (SAB KUCH RESTORED) ---
+  // --- 2. DATA LISTS ---
   const [history, setHistory] = useState([]);
   const [playlist, setPlaylist] = useState([]);
   const [milestones, setMilestones] = useState([]);
@@ -37,8 +37,6 @@ function App() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [chatMsg, setChatMsg] = useState("");
   const [chatImage, setChatImage] = useState(""); 
-  const [dreamDate, setDreamDate] = useState(""); 
-  const [partnerDate, setPartnerDate] = useState("");
 
   // --- 4. UI & LOGIC STATES ---
   const [myMood, setMyMood] = useState("🤍");
@@ -50,7 +48,24 @@ function App() {
   const chatEndRef = useRef(null);
   const cameraInputRef = useRef(null);
 
-  // --- 5. AUTOMATIC LOGIC (COUNTDOWN & QUESTIONS) ---
+  // --- HELPER: DETECT & TRANSFORM MEDIA LINKS ---
+  const getMediaEmbed = (url) => {
+    // Spotify Detection
+    if (url.includes('open.spotify.com')) {
+      const id = url.split('track/')[1]?.split('?')[0];
+      return { type: 'spotify', url: `https://open.spotify.com/embed/track/${id}?utm_source=generator` };
+    }
+    // YouTube Detection
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      let id = "";
+      if (url.includes('v=')) id = url.split('v=')[1]?.split('&')[0];
+      else id = url.split('.be/')[1]?.split('?')[0];
+      return { type: 'youtube', url: `https://www.youtube.com/embed/${id}` };
+    }
+    return { type: 'link', url: url };
+  };
+
+  // --- 5. AUTOMATIC LOGIC ---
   const getCountdown = (targetDate) => {
     const today = new Date();
     const target = new Date(today.getFullYear(), new Date(targetDate).getMonth(), new Date(targetDate).getDate());
@@ -75,7 +90,7 @@ function App() {
   const dayIndex = Math.floor(new Date().getTime() / (1000 * 60 * 60 * 24));
   const currentQuestion = dailyQuestions[dayIndex % dailyQuestions.length];
 
-  // --- 6. FIREBASE REAL-TIME SYNC ---
+  // --- 6. FIREBASE SYNC ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -84,14 +99,12 @@ function App() {
           const code = snapshot.val();
           setCoupleCode(code);
           if (code) {
-            // Settings Sync
             onValue(ref(db, `couples/${code}/settings`), (s) => {
               if (s.val()) {
                 setAnniversaryDate(s.val().anniversary || "2024-01-01");
                 setBirthdayDate(s.val().birthday || "2024-06-15");
               }
             });
-            // Mood Sync
             onValue(ref(db, `couples/${code}/moods`), (s) => {
               if (s.val()) {
                 const pId = Object.keys(s.val()).find(id => id !== currentUser.uid);
@@ -99,31 +112,26 @@ function App() {
                 setMyMood(s.val()[currentUser.uid] || "🤍");
               }
             });
-            // Chat Sync
             onValue(query(ref(db, `couples/${code}/chats`), limitToLast(30)), (s) => {
               setMessages(s.val() ? Object.values(s.val()) : []);
               setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
             });
-            // Love Notes Sync
             onValue(ref(db, `couples/${code}/notes`), (s) => {
               if (s.val()) {
                 const pId = Object.keys(s.val()).find(id => id !== currentUser.uid);
                 if (pId) setDisplayNote(s.val()[pId]);
               } else { setDisplayNote(""); }
             });
-            // Nudge Sync
             onValue(ref(db, `couples/${code}/nudge/${currentUser.uid}`), (s) => {
               if (s.val()) {
                 setNudgeShake(true);
                 setTimeout(() => { setNudgeShake(false); remove(ref(db, `couples/${code}/nudge/${currentUser.uid}`)); }, 1000);
               }
             });
-            // Other Lists Sync
             onValue(ref(db, `couples/${code}/logs`), (s) => setHistory(s.val() ? Object.values(s.val()).reverse() : []));
             onValue(ref(db, `couples/${code}/playlist`), (s) => setPlaylist(s.val() ? Object.keys(s.val()).map(k => ({ id: k, ...s.val()[k] })).reverse() : []));
             onValue(ref(db, `couples/${code}/milestones`), (s) => setMilestones(s.val() ? Object.keys(s.val()).map(k => ({ id: k, ...s.val()[k] })).reverse() : []));
             onValue(ref(db, `couples/${code}/shayaris`), (s) => setShayaris(s.val() ? Object.keys(s.val()).map(k => ({ id: k, ...s.val()[k] })).reverse() : []));
-            onValue(ref(db, `couples/${code}/game`), (s) => setGame(s.val() || { type: '', task: '', sender: '' }));
           }
         });
       }
@@ -185,7 +193,7 @@ function App() {
       </div>
 
       <div className="countdown-grid">
-        <div className="date-pill"><h4>Days Together</h4><p>{getDaysOfUs()} ✨</p></div>
+        <div className="date-pill"><h4>Together</h4><p>{getDaysOfUs()} Days</p></div>
         <div className="date-pill"><h4>Anniversary</h4><p>{getCountdown(anniversaryDate)}</p></div>
         <div className="date-pill"><h4>Birthday</h4><p>{getCountdown(birthdayDate)}</p></div>
       </div>
@@ -242,14 +250,45 @@ function App() {
         <button className="primary-btn" onClick={() => { if(!note) return; set(ref(db, `couples/${coupleCode}/notes/${user.uid}`), note); setNote(""); }}>Post Note</button>
       </div>
 
-      {/* Vibes & Shayaries */}
+      {/* --- VIBES SECTION WITH PLAYERS --- */}
       <div className="card vibe-card">
         <h3>Vibes & Shayaries 🎵✍️</h3>
-        <div className="input-group"><input className="modern-input" value={songLink} onChange={(e) => setSongLink(e.target.value)} placeholder="Spotify Link" /><button className="plus-btn" onClick={() => { if(!songLink) return; push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink, user: user.email }); setSongLink(""); }}>+</button></div>
-        <div className="input-group"><textarea className="modern-textarea cursive-text" value={shayariText} onChange={(e) => setShayariText(e.target.value)} placeholder="Write Shayari" /><button className="plus-btn" onClick={() => { if(!shayariText) return; push(ref(db, `couples/${coupleCode}/shayaris`), { text: shayariText, user: user.email }); setShayariText(""); }}>+</button></div>
+        <div className="input-group">
+          <input className="modern-input" value={songLink} onChange={(e) => setSongLink(e.target.value)} placeholder="Paste Spotify/YouTube Link" />
+          <button className="plus-btn" onClick={() => { if(!songLink) return; push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink, user: user.email.split('@')[0] }); setSongLink(""); }}>+</button>
+        </div>
+        
+        <div className="input-group">
+          <textarea className="modern-textarea cursive-text" value={shayariText} onChange={(e) => setShayariText(e.target.value)} placeholder="Write Shayari" />
+          <button className="plus-btn" onClick={() => { if(!shayariText) return; push(ref(db, `couples/${coupleCode}/shayaris`), { text: shayariText, user: user.email.split('@')[0] }); setShayariText(""); }}>+</button>
+        </div>
+
         <div className="vibe-scroller">
-          {playlist.map(s => <div key={s.id} className="vibe-item"><span>🎵 {s.user.split('@')[0]}'s Pick</span><button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/playlist/${s.id}`))}>×</button></div>)}
-          {shayaris.map(sh => <div key={sh.id} className="shayari-item cursive-text">"{sh.text}"<button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/shayaris/${sh.id}`))}>×</button></div>)}
+          {playlist.map(s => {
+            const media = getMediaEmbed(s.link);
+            return (
+              <div key={s.id} className="player-card">
+                <div className="player-header">
+                  <small>{s.user}'s Vibe</small>
+                  <button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/playlist/${s.id}`))}>×</button>
+                </div>
+                {media.type === 'spotify' ? (
+                  <iframe src={media.url} width="100%" height="80" frameBorder="0" allow="encrypted-media" style={{borderRadius: '12px'}}></iframe>
+                ) : media.type === 'youtube' ? (
+                  <iframe src={media.url} width="100%" height="200" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{borderRadius: '12px', border: 'none'}}></iframe>
+                ) : (
+                  <div className="vibe-item"><a href={s.link} target="_blank" rel="noreferrer">🔗 External Link</a></div>
+                )}
+              </div>
+            );
+          })}
+          
+          {shayaris.map(sh => (
+            <div key={sh.id} className="shayari-item cursive-text">
+              "{sh.text}"
+              <button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/shayaris/${sh.id}`))}>×</button>
+            </div>
+          ))}
         </div>
       </div>
 
