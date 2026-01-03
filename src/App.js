@@ -27,8 +27,6 @@ function App() {
   
   // --- 3. INPUT STATES ---
   const [answer, setAnswer] = useState("");
-  const [pro, setPro] = useState("");
-  const [con, setCon] = useState("");
   const [songLink, setSongLink] = useState("");
   const [shayariText, setShayariText] = useState("");
   const [note, setNote] = useState(""); 
@@ -48,20 +46,25 @@ function App() {
   const chatEndRef = useRef(null);
   const cameraInputRef = useRef(null);
 
-  // --- HELPER: DETECT & TRANSFORM MEDIA LINKS ---
+  // --- FIX: MEDIA EMBED LOGIC ---
   const getMediaEmbed = (url) => {
+    if (!url) return { type: 'link', url: '' };
+    
     // Spotify Detection
-    if (url.includes('open.spotify.com')) {
+    if (url.includes('spotify.com')) {
       const id = url.split('track/')[1]?.split('?')[0];
       return { type: 'spotify', url: `https://open.spotify.com/embed/track/${id}?utm_source=generator` };
     }
-    // YouTube Detection
+    
+    // YouTube Detection (Normal & Shorts)
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
       let id = "";
       if (url.includes('v=')) id = url.split('v=')[1]?.split('&')[0];
+      else if (url.includes('shorts/')) id = url.split('shorts/')[1]?.split('?')[0];
       else id = url.split('.be/')[1]?.split('?')[0];
       return { type: 'youtube', url: `https://www.youtube.com/embed/${id}` };
     }
+    
     return { type: 'link', url: url };
   };
 
@@ -170,8 +173,8 @@ function App() {
       <div className="container auth-bg">
         <h1 className="logo-text">Bondify</h1>
         <div className="card shadow-glass login-card">
-          <input className="modern-input" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-          <input className="modern-input" type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+          <input className="modern-input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className="modern-input" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
           <button className="primary-btn" onClick={() => (isLogin ? signInWithEmailAndPassword(auth, email, password) : createUserWithEmailAndPassword(auth, email, password))}>{isLogin ? "Login" : "Join Us"}</button>
           <p className="toggle-auth" onClick={() => setIsLogin(!isLogin)}>{isLogin ? "Create Account" : "Back to Login"}</p>
         </div>
@@ -183,22 +186,12 @@ function App() {
     <div className={`container ${nudgeShake ? 'nudge-shake' : ''}`}>
       <div className="user-bar"><span>🔒 {coupleCode}</span><button onClick={() => signOut(auth)}>Logout</button></div>
 
-      {/* Date Settings */}
-      <div className="card settings-card">
-        <h4 className="cursive-text">Set Your Special Dates 📅</h4>
-        <div className="flex-row">
-          <div><small>Anniversary</small><input type="date" value={anniversaryDate} onChange={(e) => {setAnniversaryDate(e.target.value); update(ref(db, `couples/${coupleCode}/settings`), {anniversary: e.target.value})}} /></div>
-          <div><small>Partner B-Day</small><input type="date" value={birthdayDate} onChange={(e) => {setBirthdayDate(e.target.value); update(ref(db, `couples/${coupleCode}/settings`), {birthday: e.target.value})}} /></div>
-        </div>
-      </div>
-
       <div className="countdown-grid">
-        <div className="date-pill"><h4>Together</h4><p>{getDaysOfUs()} Days</p></div>
+        <div className="date-pill"><h4>Together</h4><p>{getDaysOfUs()} ✨</p></div>
         <div className="date-pill"><h4>Anniversary</h4><p>{getCountdown(anniversaryDate)}</p></div>
         <div className="date-pill"><h4>Birthday</h4><p>{getCountdown(birthdayDate)}</p></div>
       </div>
 
-      {/* Love Note Popup */}
       {displayNote && (
         <div className="sticky-note-card animate-pop cursive-text">
           <p>"{displayNote}"</p>
@@ -206,7 +199,6 @@ function App() {
         </div>
       )}
 
-      {/* Chat & Mood Section */}
       <div className="card mood-chat-grid large-chat-container">
         <div className="mood-header">
            <div className="mood-item">
@@ -243,26 +235,13 @@ function App() {
         </form>
       </div>
 
-      {/* Love Note Writer */}
-      <div className="card">
-        <h3 className="cursive-text">Write a Love Note 💌</h3>
-        <input className="modern-input cursive-text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Say something sweet..." />
-        <button className="primary-btn" onClick={() => { if(!note) return; set(ref(db, `couples/${coupleCode}/notes/${user.uid}`), note); setNote(""); }}>Post Note</button>
-      </div>
-
-      {/* --- VIBES SECTION WITH PLAYERS --- */}
       <div className="card vibe-card">
         <h3>Vibes & Shayaries 🎵✍️</h3>
         <div className="input-group">
-          <input className="modern-input" value={songLink} onChange={(e) => setSongLink(e.target.value)} placeholder="Paste Spotify/YouTube Link" />
+          <input className="modern-input" value={songLink} onChange={(e) => setSongLink(e.target.value)} placeholder="Spotify/YouTube Link" />
           <button className="plus-btn" onClick={() => { if(!songLink) return; push(ref(db, `couples/${coupleCode}/playlist`), { link: songLink, user: user.email.split('@')[0] }); setSongLink(""); }}>+</button>
         </div>
         
-        <div className="input-group">
-          <textarea className="modern-textarea cursive-text" value={shayariText} onChange={(e) => setShayariText(e.target.value)} placeholder="Write Shayari" />
-          <button className="plus-btn" onClick={() => { if(!shayariText) return; push(ref(db, `couples/${coupleCode}/shayaris`), { text: shayariText, user: user.email.split('@')[0] }); setShayariText(""); }}>+</button>
-        </div>
-
         <div className="vibe-scroller">
           {playlist.map(s => {
             const media = getMediaEmbed(s.link);
@@ -275,43 +254,20 @@ function App() {
                 {media.type === 'spotify' ? (
                   <iframe src={media.url} width="100%" height="80" frameBorder="0" allow="encrypted-media" style={{borderRadius: '12px'}}></iframe>
                 ) : media.type === 'youtube' ? (
-                  <iframe src={media.url} width="100%" height="200" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen style={{borderRadius: '12px', border: 'none'}}></iframe>
+                  <iframe src={media.url} width="100%" height="180" frameBorder="0" allowFullScreen style={{borderRadius: '12px', border: 'none'}}></iframe>
                 ) : (
-                  <div className="vibe-item"><a href={s.link} target="_blank" rel="noreferrer">🔗 External Link</a></div>
+                  <div className="vibe-item"><a href={s.link} target="_blank" rel="noreferrer">🔗 Open Link</a></div>
                 )}
               </div>
             );
           })}
-          
-          {shayaris.map(sh => (
-            <div key={sh.id} className="shayari-item cursive-text">
-              "{sh.text}"
-              <button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/shayaris/${sh.id}`))}>×</button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Bucket List */}
-      <div className="card">
-        <h3>Our Bucket List 📸</h3>
-        <input className="modern-input" value={milestone} onChange={(e) => setMilestone(e.target.value)} placeholder="Next goal..." />
-        <input className="modern-input" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="Photo Link..." />
-        <button className="primary-btn" onClick={() => { push(ref(db, `couples/${coupleCode}/milestones`), { text: milestone, photo: photoUrl, completed: false }); setMilestone(""); setPhotoUrl(""); }}>Add</button>
-        <div className="milestone-gallery">
-          {milestones.map(m => (
-            <div key={m.id} className={`milestone-card ${m.completed ? 'completed' : ''}`} onClick={() => update(ref(db, `couples/${coupleCode}/milestones/${m.id}`), { completed: !m.completed })}>
-              {m.photo && <img src={m.photo} alt="goal" className="milestone-img" />}
-              <p>{m.text}</p>
-            </div>
-          ))}
         </div>
       </div>
 
       {/* Journey History */}
       <div className="card journey-input">
         <p className="daily-q cursive-text">"{currentQuestion}"</p>
-        <textarea className="modern-textarea" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Write your memory..." />
+        <textarea className="modern-textarea" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Memory..." />
         <button className="primary-btn" onClick={() => { push(ref(db, `couples/${coupleCode}/logs`), { date: new Date().toLocaleDateString(), question: currentQuestion, answer }); setAnswer(""); }}>Save Memory</button>
       </div>
 
