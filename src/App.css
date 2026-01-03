@@ -422,3 +422,10 @@ body {
   align-items: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
+.game-card { border: 2.5px solid #a29bfe !important; }
+.truth-btn { background: #74b9ff !important; color: white; border: none; padding: 12px; border-radius: 15px; cursor: pointer; flex: 1; font-weight: 600; margin-right: 5px; }
+.dare-btn { background: #ff7675 !important; color: white; border: none; padding: 12px; border-radius: 15px; cursor: pointer; flex: 1; font-weight: 600; }
+.game-box { margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.7); border-radius: 15px; border-left: 8px solid #a29bfe; }
+.settings-card input { border: 1px solid #eee; padding: 5px; border-radius: 8px; margin-top: 5px; font-family: inherit; }
+.flex-row { display: flex; gap: 10px; justify-content: center; width: 100%; }
+.delete-btn-minimal { background: rgba(255, 0, 0, 0.1); color: #ff4757; border: 1px solid #ff4757; padding: 3px 8px; border-radius: 10px; font-size: 0.65rem; cursor: pointer; }
