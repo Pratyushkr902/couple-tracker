@@ -271,11 +271,25 @@ function App() {
             const media = getMediaEmbed(s.link);
             return (
               <div key={s.id} className="player-card">
-                <div className="player-header"><small>{s.user}'s Vibe</small><button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/playlist/${s.id}`))}>×</button></div>
-                <iframe src={media.url} width="100%" height="80" frameBorder="0" allow="encrypted-media" style={{borderRadius:'12px'}}></iframe>
+                <div className="player-header">
+                  <small>{s.user}'s Vibe</small>
+                  <button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/playlist/${s.id}`))}>×</button>
+                </div>
+                
+                <iframe 
+                  src={media.url} 
+                  width="100%" 
+                 
+                  height={media.type === 'youtube' ? "300" : "80"} 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                  style={{ borderRadius: '15px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}
+                ></iframe>
               </div>
             );
           })}
+     </div>
         </div>
         <div className="input-group" style={{marginTop:'20px'}}>
           <textarea className="modern-textarea cursive-text" value={shayariText} onChange={(e) => setShayariText(e.target.value)} placeholder="Write Shayari" />
@@ -284,9 +298,6 @@ function App() {
         <div className="vibe-scroller">
           {shayaris.map(sh => <div key={sh.id} className="shayari-item cursive-text">"{sh.text}"<button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/shayaris/${sh.id}`))}>×</button></div>)}
         </div>
-      </div>
-
-      {}
       <div className="card journey-input">
         <p className="daily-q cursive-text">"{currentQuestion}"</p>
         <textarea className="modern-textarea" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Write your memory..." />
