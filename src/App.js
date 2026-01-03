@@ -9,6 +9,7 @@ import {
 import './App.css';
 
 function App() {
+
   const [user, setUser] = useState(null);
   const [coupleCode, setCoupleCode] = useState("");
   const [tempCode, setTempCode] = useState("");
@@ -16,13 +17,15 @@ function App() {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
 
+  
   const [history, setHistory] = useState([]);
   const [playlist, setPlaylist] = useState([]);
   const [milestones, setMilestones] = useState([]);
   const [messages, setMessages] = useState([]);
   const [shayaris, setShayaris] = useState([]); 
   const [game, setGame] = useState({ type: '', task: '', sender: '' });
-
+  
+  
   const [answer, setAnswer] = useState("");
   const [songLink, setSongLink] = useState("");
   const [shayariText, setShayariText] = useState("");
@@ -33,6 +36,7 @@ function App() {
   const [chatMsg, setChatMsg] = useState("");
   const [chatImage, setChatImage] = useState(""); 
 
+  
   const [myMood, setMyMood] = useState("🤍");
   const [partnerMood, setPartnerMood] = useState("🤍");
   const [nudgeShake, setNudgeShake] = useState(false); 
@@ -44,17 +48,14 @@ function App() {
 
   
   const handleDeleteAccount = async () => {
-    const confirmDelete = window.confirm(
-      "⚠ WARNING: Are you sure? This will delete your account and your personal records forever. This action cannot be undone!"
-    );
-    
+    const confirmDelete = window.confirm("⚠ WARNING: Are you sure? This will delete your account and shared memories forever!");
     if (!confirmDelete) return;
 
     try {
       const currentUser = auth.currentUser;
       const userUID = currentUser.uid;
 
-     
+      
       await remove(ref(db, `users/${userUID}`));
       
       
@@ -64,13 +65,14 @@ function App() {
     } catch (error) {
       console.error("Delete Error:", error);
       if (error.code === 'auth/requires-recent-login') {
-        alert("Security Requirement: Please Logout and Login again, then try deleting your account immediately.");
+        alert("Security Rule: Please Logout and Login again, then try deleting immediately.");
       } else {
         alert("Error: " + error.message);
       }
     }
   };
 
+  
   const getMediaEmbed = (url) => {
     if (!url) return { type: 'link', url: '' };
     if (url.includes('spotify.com')) {
@@ -110,6 +112,7 @@ function App() {
   ];
   const dayIndex = Math.floor(new Date().getTime() / (1000 * 60 * 60 * 24));
   const currentQuestion = dailyQuestions[dayIndex % dailyQuestions.length];
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -202,7 +205,7 @@ function App() {
     <div className={`container ${nudgeShake ? 'nudge-shake' : ''}`}>
       <div className="user-bar">
         <span>🔒 {coupleCode}</span>
-        <div className="user-actions">
+        <div style={{display: 'flex', gap: '8px'}}>
           <button className="delete-btn-minimal" onClick={handleDeleteAccount}>Delete Account</button>
           <button className="logout-btn-minimal" onClick={() => signOut(auth)}>Logout</button>
         </div>
@@ -257,6 +260,12 @@ function App() {
         </form>
       </div>
 
+      <div className="card">
+        <h3 className="cursive-text">Write a Love Note 💌</h3>
+        <input className="modern-input cursive-text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Say something sweet..." />
+        <button className="primary-btn" onClick={() => { if(!note) return; set(ref(db, `couples/${coupleCode}/notes/${user.uid}`), note); setNote(""); }}>Post Note</button>
+      </div>
+
       <div className="card vibe-card">
         <h3>Vibes & Shayaries 🎵✍️</h3>
         <div className="input-group">
@@ -283,6 +292,19 @@ function App() {
               </div>
             );
           })}
+        </div>
+        
+        <div className="input-group" style={{marginTop: '20px'}}>
+          <textarea className="modern-textarea cursive-text" value={shayariText} onChange={(e) => setShayariText(e.target.value)} placeholder="Write Shayari" />
+          <button className="plus-btn" onClick={() => { if(!shayariText) return; push(ref(db, `couples/${coupleCode}/shayaris`), { text: shayariText, user: user.email.split('@')[0] }); setShayariText(""); }}>+</button>
+        </div>
+        <div className="vibe-scroller">
+          {shayaris.map(sh => (
+            <div key={sh.id} className="shayari-item cursive-text">
+              "{sh.text}"
+              <button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/shayaris/${sh.id}`))}>×</button>
+            </div>
+          ))}
         </div>
       </div>
 

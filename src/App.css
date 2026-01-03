@@ -394,13 +394,12 @@ body {
   font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: 0.3s;
 }
 
 .delete-btn-minimal:hover {
   background: #ff4757;
   color: white;
-  transform: scale(1.05);
 }
 
 .logout-btn-minimal {
@@ -411,4 +410,15 @@ body {
   border-radius: 15px;
   font-size: 0.7rem;
   cursor: pointer;
+}
+
+.shayari-item {
+  background: white;
+  padding: 15px;
+  border-radius: 18px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
