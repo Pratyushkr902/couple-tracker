@@ -450,3 +450,71 @@ body {
   margin-bottom: 10px;
   padding: 0 5px;
 }
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #ff758c;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 10px;
+  transition: 0.3s;
+  text-decoration: underline;
+}
+
+.link-btn:hover {
+  color: #ff5e78;
+  transform: scale(1.05);
+}
+
+
+.connect-card {
+  text-align: center;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 2px solid #a29bfe;
+  border-radius: 25px;
+  box-shadow: 0 15px 35px rgba(162, 155, 254, 0.2);
+}
+
+.connect-card h2 {
+  color: #6c5ce7;
+  margin-bottom: 20px;
+}
+
+.connect-card p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 15px 0;
+}
+
+
+.user-bar span strong {
+  background: #ff758c;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-family: monospace;
+  margin-left: 5px;
+}
+
+
+.divider-text {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-weight: bold;
+}
+
+
+.animate-pop {
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

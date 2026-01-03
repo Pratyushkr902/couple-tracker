@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from './firebase'; 
 import { 
-  ref, push, set, onValue, remove, update, limitToLast, query, serverTimestamp 
+  ref, push, set, onValue, remove, update, limitToLast, query, serverTimestamp, get 
 } from "firebase/database";
 import { 
   createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser
@@ -11,10 +11,10 @@ import './App.css';
 function App() {
   const [user, setUser] = useState(null);
   const [coupleCode, setCoupleCode] = useState("");
+  const [inputCode, setInputCode] = useState(""); // For joining
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
-
 
   const [history, setHistory] = useState([]);
   const [playlist, setPlaylist] = useState([]);
@@ -42,7 +42,23 @@ function App() {
   const chatEndRef = useRef(null);
   const cameraInputRef = useRef(null);
 
- 
+  
+  const createCouple = async () => {
+    const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    await set(ref(db, `users/${user.uid}/coupleCode`), newCode);
+    await set(ref(db, `couples/${newCode}/settings`), { anniversary: "2024-01-01", birthday: "2024-06-15" });
+    setCoupleCode(newCode);
+  };
+
+  const joinCouple = async () => {
+    if (!inputCode) return alert("Code dalo!");
+    const snapshot = await get(ref(db, `couples/${inputCode.trim()}`));
+    if (snapshot.exists()) {
+      await set(ref(db, `users/${user.uid}/coupleCode`), inputCode.trim());
+      setCoupleCode(inputCode.trim());
+    } else { alert("Invalid Code!"); }
+  };
+
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm("⚠ WARNING: Are you sure? This will delete your account and shared memories forever!");
     if (!confirmDelete) return;
@@ -58,7 +74,6 @@ function App() {
     }
   };
 
-  
   const getMediaEmbed = (url) => {
     if (!url) return { type: 'link', url: '' };
     if (url.includes('spotify.com')) {
@@ -89,15 +104,14 @@ function App() {
   const dailyQuestions = ["Favourite quality about me?", "First impression of me?", "Dream date location?", "Our best memory?", "No phones for a day - what do we do?"];
   const currentQuestion = dailyQuestions[Math.floor(new Date().getTime() / (1000 * 60 * 60 * 24)) % dailyQuestions.length];
 
-  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
         onValue(ref(db, `users/${currentUser.uid}/coupleCode`), (snapshot) => {
           const code = snapshot.val();
-          setCoupleCode(code);
           if (code) {
+            setCoupleCode(code);
             onValue(ref(db, `couples/${code}/settings`), (s) => {
               if (s.val()) {
                 setAnniversaryDate(s.val().anniversary || "2024-01-01");
@@ -163,14 +177,34 @@ function App() {
     setChatMsg(""); setChatImage("");
   };
 
+  // --- VISIBLE CREATE ACCOUNT SCREEN ---
   if (!user) return (
     <div className="container auth-bg">
       <h1 className="logo-text">Bondify</h1>
       <div className="card shadow-glass login-card">
+        <h2 className="cursive-text">{isLogin ? "Login" : "Join Us (Create Account)"}</h2>
         <input className="modern-input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input className="modern-input" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button className="primary-btn" onClick={() => (isLogin ? signInWithEmailAndPassword(auth, email, password) : createUserWithEmailAndPassword(auth, email, password))}>{isLogin ? "Login" : "Join Us"}</button>
-        <p className="toggle-auth" onClick={() => setIsLogin(!isLogin)}>{isLogin ? "Create Account" : "Back to Login"}</p>
+        <button className="primary-btn" onClick={() => (isLogin ? signInWithEmailAndPassword(auth, email, password) : createUserWithEmailAndPassword(auth, email, password))}>
+          {isLogin ? "Login" : "Register Now"}
+        </button>
+        <button className="link-btn" style={{marginTop:'15px', background:'none', border:'none', color:'#ff758c', fontWeight:'bold', cursor:'pointer'}} onClick={() => setIsLogin(!isLogin)}>
+          {isLogin ? "New here? Create Account" : "Already have an account? Login"}
+        </button>
+      </div>
+    </div>
+  );
+
+  
+  if (!coupleCode) return (
+    <div className="container auth-bg">
+      <div className="card shadow-glass connect-card" style={{textAlign:'center', padding:'30px'}}>
+        <h2 className="cursive-text">Connect with Partner 🔗</h2>
+        <button className="primary-btn" onClick={createCouple} style={{width:'100%'}}>Generate New Secret Code</button>
+        <p style={{margin:'20px 0'}}>OR</p>
+        <input className="modern-input" placeholder="Enter Partner's Code" onChange={(e) => setInputCode(e.target.value.toUpperCase())} />
+        <button className="primary-btn" style={{background:'#a29bfe', marginTop:'10px', width:'100%'}} onClick={joinCouple}>Join Partner</button>
+        <button className="logout-btn-minimal" style={{marginTop:'30px'}} onClick={() => signOut(auth)}>Logout</button>
       </div>
     </div>
   );
@@ -178,14 +212,13 @@ function App() {
   return (
     <div className={`container ${nudgeShake ? 'nudge-shake' : ''}`}>
       <div className="user-bar">
-        <span>🔒 {coupleCode}</span>
+        <span>🔒 Shared Code: {coupleCode}</span>
         <div style={{display:'flex', gap:'8px'}}>
           <button className="delete-btn-minimal" onClick={handleDeleteAccount}>Delete</button>
           <button className="logout-btn-minimal" onClick={() => signOut(auth)}>Logout</button>
         </div>
       </div>
 
-     
       <div className="card settings-card">
         <h4 className="cursive-text">Special Dates 📅</h4>
         <div className="flex-row">
@@ -200,7 +233,6 @@ function App() {
         <div className="date-pill"><h4>Birthday</h4><p>{getCountdown(birthdayDate)}</p></div>
       </div>
 
-      
       <div className="card mood-chat-grid large-chat-container">
         <div className="mood-header">
            <div className="mood-item">
@@ -236,7 +268,6 @@ function App() {
         </form>
       </div>
 
-     
       <div className="card game-card">
         <h3 className="cursive-text">Wanna play Truth or Dare? 🎲</h3>
         <div className="flex-row">
@@ -251,7 +282,6 @@ function App() {
         )}
       </div>
 
-      
       <div className="card">
         <h3 className="cursive-text">Write a Love Note 💌</h3>
         <input className="modern-input cursive-text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Say something sweet..." />
@@ -259,7 +289,6 @@ function App() {
       </div>
       {displayNote && <div className="sticky-note-card animate-pop cursive-text"><p>"{displayNote}"</p><button className="clear-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/notes`))}>Read & Clear 📌</button></div>}
 
-      {}
       <div className="card vibe-card">
         <h3>Vibes & Shayaries 🎵✍️</h3>
         <div className="input-group">
@@ -275,21 +304,17 @@ function App() {
                   <small>{s.user}'s Vibe</small>
                   <button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/playlist/${s.id}`))}>×</button>
                 </div>
-                
                 <iframe 
                   src={media.url} 
                   width="100%" 
-                 
                   height={media.type === 'youtube' ? "300" : "80"} 
                   frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                   allowFullScreen
-                  style={{ borderRadius: '15px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}
+                  style={{ borderRadius: '15px', border: 'none' }}
                 ></iframe>
               </div>
             );
           })}
-     </div>
         </div>
         <div className="input-group" style={{marginTop:'20px'}}>
           <textarea className="modern-textarea cursive-text" value={shayariText} onChange={(e) => setShayariText(e.target.value)} placeholder="Write Shayari" />
@@ -298,6 +323,8 @@ function App() {
         <div className="vibe-scroller">
           {shayaris.map(sh => <div key={sh.id} className="shayari-item cursive-text">"{sh.text}"<button className="rm-btn" onClick={() => remove(ref(db, `couples/${coupleCode}/shayaris/${sh.id}`))}>×</button></div>)}
         </div>
+      </div>
+
       <div className="card journey-input">
         <p className="daily-q cursive-text">"{currentQuestion}"</p>
         <textarea className="modern-textarea" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Write your memory..." />
